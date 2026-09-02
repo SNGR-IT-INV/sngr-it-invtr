@@ -45,7 +45,7 @@ export default async function VisitDetailPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <h1 className="font-mono text-xl font-semibold">
-              {visit.ticketNumber}
+              {visit.ticketNumber ?? `Visit #${visit.id}`}
             </h1>
             <Badge variant="outline">
               {visit.kind === "out" ? "Out log" : "In log"}
@@ -138,6 +138,22 @@ export default async function VisitDetailPage({
                           {REASON_LABEL[item.returnReason] ?? item.returnReason}
                         </Badge>
                       ) : null}
+                      {item.ticketNumber ? (
+                        <Badge
+                          variant="outline"
+                          className="font-mono font-normal"
+                        >
+                          {item.ticketNumber}
+                        </Badge>
+                      ) : null}
+                      {item.quoteNumber ? (
+                        <Badge
+                          variant="outline"
+                          className="font-mono font-normal"
+                        >
+                          {item.quoteNumber}
+                        </Badge>
+                      ) : null}
                     </div>
                     {item.accessoryNotes ? (
                       <p className="text-muted-foreground text-xs">
@@ -147,6 +163,11 @@ export default async function VisitDetailPage({
                     {item.returnReasonNote ? (
                       <p className="text-muted-foreground text-xs">
                         Reason: {item.returnReasonNote}
+                      </p>
+                    ) : null}
+                    {item.intendedFor ? (
+                      <p className="text-muted-foreground text-xs">
+                        For: {item.intendedFor.name}
                       </p>
                     ) : null}
                   </div>
@@ -183,23 +204,31 @@ export default async function VisitDetailPage({
             </CardContent>
           </Card>
 
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle className="text-base">Signature</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {visit.signatureUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={visit.signatureUrl}
-                  alt="Signature"
-                  className="w-full rounded-lg border bg-white"
-                />
-              ) : (
-                <p className="text-muted-foreground text-sm">Not signed yet.</p>
-              )}
-            </CardContent>
-          </Card>
+          {/* In-log is a quick walk-in/walk-out — no signature is collected
+              there, so this card would be permanently empty noise. Only
+              shown for out-log, or an older in-log visit that still has
+              one from before this changed. */}
+          {visit.kind === "out" || visit.signatureUrl ? (
+            <Card size="sm">
+              <CardHeader>
+                <CardTitle className="text-base">Signature</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {visit.signatureUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={visit.signatureUrl}
+                    alt="Signature"
+                    className="w-full rounded-lg border bg-white"
+                  />
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    Not signed yet.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </div>
     </PageContainer>

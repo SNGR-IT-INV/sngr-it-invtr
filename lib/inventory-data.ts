@@ -146,13 +146,16 @@ export async function getVisitDetail(id: number) {
           "otherAccessoriesIncluded",
           "accessoryNotes",
           "returnReason",
-          "returnReasonNote"
+          "returnReasonNote",
+          "ticketNumber",
+          "quoteNumber"
         )
         .include("equipment", (e) =>
           e
             .select("id", "serialNumber", "type", "brand", "model", "status")
             .include("department", (d) => d.select("id", "name"))
         )
+        .include("intendedFor", (s) => s.select("id", "name"))
     )
     .first()
 }
@@ -215,6 +218,8 @@ export async function getEquipmentDetail(id: number) {
           "accessoryNotes",
           "returnReason",
           "returnReasonNote",
+          "ticketNumber",
+          "quoteNumber",
           "createdAt"
         )
         .include("visit", (v) =>
@@ -223,6 +228,7 @@ export async function getEquipmentDetail(id: number) {
             .include("processedBy", (s) => s.select("id", "name"))
             .include("counterparty", (s) => s.select("id", "name"))
         )
+        .include("intendedFor", (s) => s.select("id", "name"))
         .orderBy((e) => e.createdAt.desc())
     )
     .first()

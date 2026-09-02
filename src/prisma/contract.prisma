@@ -53,6 +53,7 @@ model Staff {
   heldEquipment      Equipment[]      @relation("EquipmentHolder")
   processedVisits    EquipmentVisit[] @relation("VisitsProcessed")
   counterpartyVisits EquipmentVisit[] @relation("VisitsCounterparty")
+  intendedForEvents  EquipmentEvent[] @relation("EventIntendedRecipient")
 
   createdAt TimestamptzString @default(now())
 
@@ -154,15 +155,22 @@ enum EquipmentVisitStatus {
   @@type("pg/text@1")
 }
 
-// One visit to the IT desk — one ticket, one signature, covering one or more
-// equipment items (e.g. a laptop and a phone returned together on the same
-// offboarding ticket). This is the kiosk "in log" / "out log" header.
+// One visit to the IT desk, covering one or more equipment items. This is
+// the kiosk "in log" / "out log" header.
+//
+// ticketNumber is nullable: out-log is still one ticket driving one
+// prepared pickup (required there at the app layer), but in-log is a
+// walk-in/delivery that can span several unrelated tickets in one visit
+// (e.g. HR batching up returns for different people, or one supplier
+// delivery covering several purchase tickets) — see EquipmentEvent's own
+// ticketNumber/quoteNumber for the per-item version that actually applies
+// to in-log.
 model EquipmentVisit {
   id           Int                  @id @default(autoincrement())
   kind         EquipmentVisitKind   @default(in)
   status       EquipmentVisitStatus @default(completed)
   occurredAt   TimestamptzString    @default(now())
-  ticketNumber String
+  ticketNumber String?
 
   // The IT staffer who handled this visit — for in-log, whoever's at the
   // kiosk; for out-log, whoever completes the pickup, which may be someone
@@ -214,6 +222,21 @@ model EquipmentEvent {
   // Why this item is coming back — return-type events only.
   returnReason     EquipmentReturnReason?
   returnReasonNote String?
+
+  // Per-item ticket — see the comment on EquipmentVisit.ticketNumber for
+  // why this lives here instead of (or as well as) on the visit. Applies
+  // to both intake and return events.
+  ticketNumber String?
+  // Supplier quote number — intake events only (new stock being ordered
+  // in, not a return).
+  quoteNumber  String?
+
+  // Who this item is ultimately headed for, if known at intake — distinct
+  // from Equipment.currentHolder, which is only set at actual handout.
+  // Optional: a department can stock up ahead of a hire with nobody
+  // named yet.
+  intendedFor   Staff? @relation("EventIntendedRecipient", fields: [intendedForId], references: [id], onDelete: SetNull)
+  intendedForId Int?
 
   createdAt TimestamptzString @default(now())
 

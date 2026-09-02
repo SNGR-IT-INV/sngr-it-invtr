@@ -56,9 +56,9 @@ export default async function OverviewPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Overview</h1>
-          <p className="text-sm text-muted-foreground">
-            {stats.totalEquipment} piece{stats.totalEquipment === 1 ? "" : "s"} of
-            equipment tracked
+          <p className="text-muted-foreground text-sm">
+            {stats.totalEquipment} piece{stats.totalEquipment === 1 ? "" : "s"}{" "}
+            of equipment tracked
           </p>
         </div>
         <Button size="sm" render={<Link href="/kiosk/intake" />}>
@@ -71,12 +71,12 @@ export default async function OverviewPage() {
           <Card key={c.label} size="sm">
             <CardHeader>
               <CardDescription>{c.label}</CardDescription>
-              <CardTitle className="text-2xl font-mono">{c.value}</CardTitle>
+              <CardTitle className="font-mono text-2xl">{c.value}</CardTitle>
               <CardAction>
-                <Icon icon={c.icon} className="size-4 text-muted-foreground" />
+                <Icon icon={c.icon} className="text-muted-foreground size-4" />
               </CardAction>
             </CardHeader>
-            <CardContent className="text-xs text-muted-foreground">
+            <CardContent className="text-muted-foreground text-xs">
               {c.hint}
             </CardContent>
           </Card>
@@ -90,7 +90,7 @@ export default async function OverviewPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-0 px-0">
           {recentVisits.length === 0 ? (
-            <p className="px-6 text-sm text-muted-foreground">
+            <p className="text-muted-foreground px-6 text-sm">
               No visits logged yet — they&rsquo;ll show up here once the kiosk
               starts getting used.
             </p>
@@ -101,17 +101,19 @@ export default async function OverviewPage() {
                 className="flex items-center justify-between border-t px-6 py-3 text-sm first:border-t-0"
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {v.ticketNumber}
+                  <span className="text-muted-foreground font-mono text-xs">
+                    {v.ticketNumber ?? `Visit #${v.id}`}
                   </span>
                   <span>
                     {v.items} item{v.items === 1 ? "" : "s"} · brought in by{" "}
                     {v.counterparty?.name ?? v.counterpartyNote ?? "—"}
                   </span>
                 </div>
-                <div className="flex flex-col items-end gap-0.5 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex flex-col items-end gap-0.5 text-xs">
                   <span>
-                    {v.processedBy ? `received by ${v.processedBy.name}` : "awaiting pickup"}
+                    {v.processedBy
+                      ? `received by ${v.processedBy.name}`
+                      : "awaiting pickup"}
                   </span>
                   <span>{new Date(v.occurredAt).toLocaleDateString()}</span>
                 </div>

@@ -34,6 +34,11 @@ const itemSchema = z
     accessoryNotes: z.string().trim().nullable(),
     returnReason: z.enum(returnReasonValues).nullable(),
     returnReasonNote: z.string().trim().nullable(),
+    // All optional — plenty of real drop-offs (a plain supplier accessory
+    // order, a walk-in with no ticket handy) have none of these.
+    ticketNumber: z.string().trim().nullable(),
+    quoteNumber: z.string().trim().nullable(),
+    intendedForId: z.number().int().positive().nullable(),
   })
   .refine(
     (item) => item.matchedEquipmentId !== null || item.departmentId !== null,
@@ -66,13 +71,19 @@ const partySchema = z
   .nullable()
 
 const visitSchema = z.object({
-  ticketNumber: z.string().trim().min(1, "Ticket number is required"),
+  // Nullable at the visit level — in-log tickets now live per item (a
+  // single walk-in can span several unrelated tickets). Out-log's own
+  // future action will require this here since it's still one ticket per
+  // prepared pickup.
+  ticketNumber: z.string().trim().nullable(),
   processedById: z.coerce
     .number({ message: "Pick who received it" })
     .int()
     .positive(),
   notes: z.string().trim().nullable(),
-  signature: z.string().trim().min(1, "Signature is required"),
+  // Not collected on in-log — a quick walk-in/walk-out shouldn't need a
+  // signature. Out-log will require one at pickup.
+  signature: z.string().trim().nullable(),
   counterparty: partySchema,
   items: z.array(itemSchema).min(1, "Add at least one item"),
 })
@@ -173,6 +184,11 @@ export async function submitIntakeVisit(
             eventType === "return" && item.returnReason === "other"
               ? item.returnReasonNote
               : null,
+          ticketNumber: item.ticketNumber,
+          // Quote/intended-recipient are a new-stock concept, not a return
+          // one.
+          quoteNumber: eventType === "intake" ? item.quoteNumber : null,
+          intendedForId: eventType === "intake" ? item.intendedForId : null,
         })
       }
 

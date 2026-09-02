@@ -490,10 +490,24 @@
                   "kind": "scalar"
                 }
               },
+              "intendedForId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "otherAccessoriesIncluded": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "quoteNumber": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -511,6 +525,13 @@
                 }
               },
               "returnReasonNote": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "ticketNumber": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -554,6 +575,21 @@
                   "namespace": "public"
                 }
               },
+              "intendedFor": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "intendedForId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Staff",
+                  "namespace": "public"
+                }
+              },
               "visit": {
                 "cardinality": "N:1",
                 "on": {
@@ -587,14 +623,23 @@
                 "id": {
                   "column": "id"
                 },
+                "intendedForId": {
+                  "column": "intendedForId"
+                },
                 "otherAccessoriesIncluded": {
                   "column": "otherAccessoriesIncluded"
+                },
+                "quoteNumber": {
+                  "column": "quoteNumber"
                 },
                 "returnReason": {
                   "column": "returnReason"
                 },
                 "returnReasonNote": {
                   "column": "returnReasonNote"
+                },
+                "ticketNumber": {
+                  "column": "ticketNumber"
                 },
                 "type": {
                   "column": "type"
@@ -692,7 +737,7 @@
                 }
               },
               "ticketNumber": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -887,6 +932,21 @@
                 },
                 "to": {
                   "model": "Equipment",
+                  "namespace": "public"
+                }
+              },
+              "intendedForEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "intendedForId"
+                  ]
+                },
+                "to": {
+                  "model": "EquipmentEvent",
                   "namespace": "public"
                 }
               },
@@ -1230,6 +1290,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "intendedForId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "otherAccessoriesIncluded": {
                   "codecId": "pg/bool@1",
                   "default": {
@@ -1238,6 +1303,11 @@
                   },
                   "nativeType": "bool",
                   "nullable": false
+                },
+                "quoteNumber": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "returnReason": {
                   "codecId": "pg/text@1",
@@ -1251,6 +1321,11 @@
                   }
                 },
                 "returnReasonNote": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "ticketNumber": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -1306,6 +1381,23 @@
                     "namespaceId": "public",
                     "tableName": "equipmentVisit"
                   }
+                },
+                {
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "intendedForId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "equipmentEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "staff"
+                  }
                 }
               ],
               "indexes": [
@@ -1315,6 +1407,14 @@
                   ],
                   "name": "equipmentEvent_equipmentId_idx_e1548594",
                   "prefix": "equipmentEvent_equipmentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "intendedForId"
+                  ],
+                  "name": "equipmentEvent_intendedForId_idx_53db83a1",
+                  "prefix": "equipmentEvent_intendedForId_idx",
                   "unique": false
                 },
                 {
@@ -1440,7 +1540,7 @@
                 "ticketNumber": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -1718,7 +1818,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "22d82306b0a9666828e0876894b2fbf8f920006190464e5d73dc850675c5c4e4"
+    "storageHash": "878e75339db97b3f53b71329ee90480f98365ce37dfa69594147e1e3c76dbf8d"
   },
   "capabilities": {
     "postgres": {

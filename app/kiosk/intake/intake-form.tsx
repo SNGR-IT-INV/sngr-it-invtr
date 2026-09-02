@@ -28,7 +28,6 @@ import {
   EquipmentSerialCombobox,
   type EquipmentOption,
 } from "@/components/equipment-serial-combobox"
-import { SignaturePad } from "@/components/signature-pad"
 import {
   EQUIPMENT_TYPES,
   RETURN_REASONS,
@@ -57,6 +56,13 @@ export type ItemDraft = {
   accessoryNotes: string
   returnReason: ReturnReasonValue | null
   returnReasonNote: string
+  // Per-item, not per-visit — a single walk-in can span several unrelated
+  // tickets (HR batching up returns, one supplier delivery covering
+  // several purchase tickets). All optional: plenty of real drop-offs
+  // have none of these.
+  ticketNumber: string
+  quoteNumber: string
+  intendedFor: StaffPartyValue
 }
 
 function blankItem(type: EquipmentTypeValue): ItemDraft {
@@ -73,6 +79,9 @@ function blankItem(type: EquipmentTypeValue): ItemDraft {
     accessoryNotes: "",
     returnReason: null,
     returnReasonNote: "",
+    ticketNumber: "",
+    quoteNumber: "",
+    intendedFor: null,
   }
 }
 
@@ -95,11 +104,9 @@ export function IntakeForm({
     initialState
   )
 
-  const [ticketNumber, setTicketNumber] = React.useState("")
   const [processedById, setProcessedById] = React.useState("")
   const [counterparty, setCounterparty] = React.useState<StaffPartyValue>(null)
   const [notes, setNotes] = React.useState("")
-  const [signature, setSignature] = React.useState<string | null>(null)
   const [items, setItems] = React.useState<ItemDraft[]>([])
 
   // A draft found in localStorage from an earlier, interrupted session —
@@ -122,38 +129,18 @@ export function IntakeForm({
 
   React.useEffect(() => {
     if (pendingDraft) return
-    const draft = {
-      ticketNumber,
-      processedById,
-      counterparty,
-      notes,
-      signature,
-      items,
-    }
+    const draft = { processedById, counterparty, notes, items }
     if (!isDraftWorthSaving(draft)) return
     const timeout = setTimeout(() => saveDraft(draft), 500)
     return () => clearTimeout(timeout)
-  }, [
-    pendingDraft,
-    ticketNumber,
-    processedById,
-    counterparty,
-    notes,
-    signature,
-    items,
-  ])
+  }, [pendingDraft, processedById, counterparty, notes, items])
 
   function resumeDraft() {
     if (!pendingDraft) return
-    setTicketNumber(pendingDraft.ticketNumber)
     setProcessedById(pendingDraft.processedById)
     setCounterparty(pendingDraft.counterparty)
     setNotes(pendingDraft.notes)
     setItems(pendingDraft.items)
-    // Signature intentionally not restored — SignaturePad's canvas has
-    // nothing drawn on it after a reload, so leaving the old dataURL in
-    // state would enable submit with a signature nobody can see. Simpler
-    // and arguably more correct to have them sign again.
     setPendingDraft(null)
   }
 
@@ -194,11 +181,9 @@ export function IntakeForm({
   >(null)
   if (state.status === "success" && state.visitId !== lastHandledVisitId) {
     setLastHandledVisitId(state.visitId)
-    setTicketNumber("")
     setProcessedById("")
     setCounterparty(null)
     setNotes("")
-    setSignature(null)
     setItems([])
     clearDraft()
   }
@@ -222,12 +207,7 @@ export function IntakeForm({
   )
 
   const canSubmit =
-    !pending &&
-    items.length > 0 &&
-    !!signature &&
-    !!processedById &&
-    !!ticketNumber.trim() &&
-    !returnsMissingReason
+    !pending && items.length > 0 && !!processedById && !returnsMissingReason
 
   return (
     <form action={formAction} className="flex flex-col gap-6 pb-24">
@@ -238,19 +218,12 @@ export function IntakeForm({
         value={JSON.stringify(counterparty)}
       />
       <input type="hidden" name="items" value={JSON.stringify(items)} />
-      <input type="hidden" name="signature" value={signature ?? ""} />
 
       {pendingDraft ? (
         <div className="border-warning/40 bg-warning/10 flex flex-col gap-3 rounded-lg border px-4 py-3 text-base sm:flex-row sm:items-center sm:justify-between">
           <span>
-            Unfinished visit found
-            {pendingDraft.ticketNumber
-              ? ` (ticket ${pendingDraft.ticketNumber})`
-              : ""}
-            {" — "}
-            {pendingDraft.items.length} item
-            {pendingDraft.items.length === 1 ? "" : "s"}. Resuming will need a
-            fresh signature.
+            Unfinished visit found — {pendingDraft.items.length} item
+            {pendingDraft.items.length === 1 ? "" : "s"}.
           </span>
           <div className="flex gap-2">
             <Button
@@ -285,20 +258,7 @@ export function IntakeForm({
           <CardTitle>Visit details</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ticketNumber">Ticket number</Label>
-            <Input
-              id="ticketNumber"
-              name="ticketNumber"
-              className="h-11 font-mono text-base"
-              value={ticketNumber}
-              onChange={(e) => setTicketNumber(e.target.value)}
-              placeholder="e.g. HD-4821"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <Label>Received by</Label>
             <Select
               value={processedById}
@@ -389,6 +349,7 @@ export function IntakeForm({
                     item={item}
                     equipment={equipment}
                     departments={departments}
+                    allStaff={allStaff}
                     onChange={(patch) => updateItem(item.clientId, patch)}
                     onRemove={() => removeItem(item.clientId)}
                   />
@@ -401,22 +362,6 @@ export function IntakeForm({
               Check off what arrived above to start logging items.
             </p>
           ) : null}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Signature</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SignaturePad
-            label={
-              counterparty
-                ? `Signed by ${counterparty.name}`
-                : "Whoever brought this in signs here"
-            }
-            onChange={setSignature}
-          />
         </CardContent>
       </Card>
 
@@ -442,12 +387,14 @@ function ItemCard({
   item,
   equipment,
   departments,
+  allStaff,
   onChange,
   onRemove,
 }: {
   item: ItemDraft
   equipment: EquipmentOption[]
   departments: { id: number; name: string }[]
+  allStaff: StaffOption[]
   onChange: (patch: Partial<ItemDraft>) => void
   onRemove: () => void
 }) {
@@ -496,6 +443,16 @@ function ItemCard({
           />
         </div>
 
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <Label>Ticket number (optional)</Label>
+          <Input
+            className="h-11 font-mono text-base"
+            value={item.ticketNumber}
+            onChange={(e) => onChange({ ticketNumber: e.target.value })}
+            placeholder="e.g. T-4821"
+          />
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <Label>Brand</Label>
           <Input
@@ -517,29 +474,51 @@ function ItemCard({
         </div>
 
         {!isReturn ? (
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <Label>Department</Label>
-            <Select
-              value={item.departmentId ? String(item.departmentId) : ""}
-              onValueChange={(v) =>
-                onChange({ departmentId: v ? Number(v) : null })
-              }
-            >
-              <SelectTrigger
-                aria-label="Department"
-                className="h-11 w-full text-base"
+          <>
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
+              <Label>Department</Label>
+              <Select
+                value={item.departmentId ? String(item.departmentId) : ""}
+                onValueChange={(v) =>
+                  onChange({ departmentId: v ? Number(v) : null })
+                }
               >
-                <SelectValue placeholder="Which department is this for?" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((d) => (
-                  <SelectItem key={d.id} value={String(d.id)}>
-                    {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger
+                  aria-label="Department"
+                  className="h-11 w-full text-base"
+                >
+                  <SelectValue placeholder="Which department is this for?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments.map((d) => (
+                    <SelectItem key={d.id} value={String(d.id)}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>Quote number (optional)</Label>
+              <Input
+                className="h-11 font-mono text-base"
+                value={item.quoteNumber}
+                onChange={(e) => onChange({ quoteNumber: e.target.value })}
+                placeholder="e.g. Q-17706"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>Intended for (optional)</Label>
+              <StaffCombobox
+                staff={allStaff}
+                value={item.intendedFor}
+                onChange={(v) => onChange({ intendedFor: v })}
+                placeholder="Leave blank for department stock"
+              />
+            </div>
+          </>
         ) : (
           <div className="flex flex-col gap-1.5 sm:col-span-2">
             <Label>Why is this coming back?</Label>

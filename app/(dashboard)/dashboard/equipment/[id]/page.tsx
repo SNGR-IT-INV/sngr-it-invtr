@@ -105,7 +105,7 @@ export default async function EquipmentDetailPage({
                         href={`/dashboard/visits/${event.visit.id}`}
                         className="hover:text-primary font-mono text-sm"
                       >
-                        {event.visit.ticketNumber}
+                        {event.visit.ticketNumber ?? `Visit #${event.visit.id}`}
                       </Link>
                     ) : null}
                   </div>
@@ -142,6 +142,16 @@ export default async function EquipmentDetailPage({
                       {REASON_LABEL[event.returnReason] ?? event.returnReason}
                     </Badge>
                   ) : null}
+                  {event.ticketNumber ? (
+                    <Badge variant="outline" className="font-mono font-normal">
+                      {event.ticketNumber}
+                    </Badge>
+                  ) : null}
+                  {event.quoteNumber ? (
+                    <Badge variant="outline" className="font-mono font-normal">
+                      {event.quoteNumber}
+                    </Badge>
+                  ) : null}
                 </div>
                 {event.accessoryNotes ? (
                   <p className="text-muted-foreground text-xs">
@@ -151,6 +161,11 @@ export default async function EquipmentDetailPage({
                 {event.returnReasonNote ? (
                   <p className="text-muted-foreground text-xs">
                     Reason: {event.returnReasonNote}
+                  </p>
+                ) : null}
+                {event.intendedFor ? (
+                  <p className="text-muted-foreground text-xs">
+                    For: {event.intendedFor.name}
                   </p>
                 ) : null}
               </div>

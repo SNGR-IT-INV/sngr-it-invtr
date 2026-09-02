@@ -15,7 +15,9 @@ export function getVisitColumns({
       accessorKey: "ticketNumber",
       header: "Ticket",
       cell: ({ row }) => (
-        <span className="font-mono text-sm">{row.original.ticketNumber}</span>
+        <span className="font-mono text-sm">
+          {row.original.ticketNumber ?? "—"}
+        </span>
       ),
     },
     {

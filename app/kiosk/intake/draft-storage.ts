@@ -1,4 +1,5 @@
 import type { StaffPartyValue } from "@/components/staff-combobox"
+
 import type { ItemDraft } from "./intake-form"
 
 // Plain functions, not a hook — there's exactly one consumer (the intake
@@ -14,11 +15,9 @@ const STALE_AFTER_MS = 30 * 60 * 1000
 
 export type IntakeDraft = {
   savedAt: number
-  ticketNumber: string
   processedById: string
   counterparty: StaffPartyValue
   notes: string
-  signature: string | null
   items: ItemDraft[]
 }
 
@@ -26,9 +25,7 @@ export function isDraftWorthSaving(
   draft: Omit<IntakeDraft, "savedAt">
 ): boolean {
   return (
-    draft.ticketNumber.trim().length > 0 ||
     draft.notes.trim().length > 0 ||
-    draft.signature !== null ||
     draft.counterparty !== null ||
     draft.items.length > 0
   )
