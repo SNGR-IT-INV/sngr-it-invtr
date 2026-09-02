@@ -42,3 +42,6 @@ next-env.d.ts
 node_modules/
 dist/
 .env
+
+# local working notes — not shared via git
+HANDOFF.md
