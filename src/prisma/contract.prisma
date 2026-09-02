@@ -5,9 +5,9 @@
 // IT itself is one row here; its members are the Staff who show up as
 // `processedBy` on EquipmentEvent.
 model Department {
-  id       Int         @id @default(autoincrement())
-  name     String      @unique
-  parent   Department? @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  id       Int          @id @default(autoincrement())
+  name     String       @unique
+  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
   parentId Int?
   children Department[] @relation("DepartmentHierarchy")
 
@@ -20,10 +20,11 @@ model Department {
 }
 
 enum StaffStatus {
-  @@type("pg/text@1")
   active   = "active"
   on_leave = "on_leave"
   resigned = "resigned"
+
+  @@type("pg/text@1")
 }
 
 // A person in the org — one row per actual human, never renamed for a
@@ -59,7 +60,6 @@ model Staff {
 }
 
 enum EquipmentType {
-  @@type("pg/text@1")
   laptop          = "laptop"
   desktop         = "desktop"
   docking_station = "docking_station"
@@ -68,10 +68,11 @@ enum EquipmentType {
   iphone          = "iphone"
   ipad            = "ipad"
   other           = "other"
+
+  @@type("pg/text@1")
 }
 
 enum EquipmentStatus {
-  @@type("pg/text@1")
   in_storage      = "in_storage"
   // Prepped for a specific out-log visit but not yet handed over — keeps it
   // from looking like free stock between prep and pickup.
@@ -79,6 +80,8 @@ enum EquipmentStatus {
   handed_out      = "handed_out"
   awaiting_repair = "awaiting_repair"
   retired         = "retired"
+
+  @@type("pg/text@1")
 }
 
 // A single physical asset, tracked by serial number for its whole lifecycle.
@@ -109,21 +112,23 @@ model Equipment {
 }
 
 enum EquipmentEventType {
-  @@type("pg/text@1")
   intake  = "intake"
   return  = "return"
   handout = "handout"
+
+  @@type("pg/text@1")
 }
 
 // Why a return is coming back — only meaningful on return-type events.
 enum EquipmentReturnReason {
-  @@type("pg/text@1")
   loa         = "loa"
   resignation = "resignation"
   e_waste     = "e_waste"
   role_change = "role_change"
   replacement = "replacement"
   other       = "other"
+
+  @@type("pg/text@1")
 }
 
 // Which kiosk flow created this visit — determines whether it belongs on
@@ -132,19 +137,21 @@ enum EquipmentReturnReason {
 // query directly, and it's genuinely what the visit *is*, categorically,
 // not just an emergent property of what's in it.
 enum EquipmentVisitKind {
-  @@type("pg/text@1")
   in  = "in"
   out = "out"
+
+  @@type("pg/text@1")
 }
 
 enum EquipmentVisitStatus {
-  @@type("pg/text@1")
   // In-log visits are always created already-complete (walk-up, one
   // continuous transaction). Out-log visits start `draft` at prep time —
   // ticket + items + recipient known, nobody's signed yet — and flip to
   // `completed` at pickup, whenever that turns out to be.
   draft     = "draft"
   completed = "completed"
+
+  @@type("pg/text@1")
 }
 
 // One visit to the IT desk — one ticket, one signature, covering one or more
