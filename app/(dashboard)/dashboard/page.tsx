@@ -13,6 +13,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { getInventoryStats, getRecentVisits } from "@/lib/inventory-data"
 
+// Live counts on every request — don't let this get prerendered as a stale
+// build-time snapshot (it currently only stays dynamic incidentally, via
+// the dashboard layout's cookies() call).
+export const dynamic = "force-dynamic"
+
 export default async function OverviewPage() {
   const [stats, recentVisits] = await Promise.all([
     getInventoryStats(),
