@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 
 const EQUIPMENT_STATUS_LABEL: Record<string, string> = {
   in_storage: "In storage",
+  reserved: "Reserved",
   handed_out: "Handed out",
   awaiting_repair: "Awaiting repair",
   retired: "Retired",
@@ -17,6 +18,8 @@ const EQUIPMENT_STATUS_LABEL: Record<string, string> = {
 const EQUIPMENT_STATUS_CLASS: Record<string, string> = {
   in_storage:
     "bg-success/15 text-emerald-700 border-success/30 dark:text-emerald-300",
+  reserved:
+    "bg-warning/20 text-amber-800 border-warning/40 dark:text-amber-300",
   handed_out: "bg-primary/15 text-primary border-primary/30",
   awaiting_repair:
     "bg-warning/20 text-amber-800 border-warning/40 dark:text-amber-300",
@@ -41,8 +44,10 @@ const STAFF_STATUS_LABEL: Record<string, string> = {
 }
 
 const STAFF_STATUS_CLASS: Record<string, string> = {
-  active: "bg-success/15 text-emerald-700 border-success/30 dark:text-emerald-300",
-  on_leave: "bg-warning/20 text-amber-800 border-warning/40 dark:text-amber-300",
+  active:
+    "bg-success/15 text-emerald-700 border-success/30 dark:text-emerald-300",
+  on_leave:
+    "bg-warning/20 text-amber-800 border-warning/40 dark:text-amber-300",
   resigned: "bg-muted text-muted-foreground border-transparent",
 }
 

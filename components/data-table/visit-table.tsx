@@ -28,6 +28,7 @@ export function VisitTable({
       totalRows={totalRows}
       onRowClick={(row: VisitRow) => router.push(`/dashboard/visits/${row.id}`)}
       emptyMessage="No visits match these filters."
+      itemLabel="visit"
     />
   )
 }

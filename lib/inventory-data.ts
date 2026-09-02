@@ -1,4 +1,9 @@
 import { db } from "@/src/prisma/db"
+import type {
+  EquipmentStatusValue,
+  EquipmentTypeValue,
+  StaffStatusValue,
+} from "@/lib/equipment-types"
 
 export async function getItStaff() {
   const it = await db.orm.public.Department.where({ name: "IT" }).first()
@@ -150,6 +155,157 @@ export async function getVisitDetail(id: number) {
         )
     )
     .first()
+}
+
+export type EquipmentListFilters = {
+  page: number
+  perPage: number
+  search?: string
+  type?: EquipmentTypeValue
+  status?: EquipmentStatusValue
+  departmentId?: number
+}
+
+export async function getEquipmentPage(filters: EquipmentListFilters) {
+  let query = db.orm.public.Equipment.where({})
+
+  if (filters.search) {
+    // Serial number only for now — multi-field OR search would need the
+    // and/or/not combinators, which aren't on the public façade yet (see
+    // Prisma Next's queries.md "What Prisma Next doesn't do yet").
+    const term = filters.search
+    query = query.where((e) => e.serialNumber.ilike(`%${term}%`))
+  }
+  if (filters.type) {
+    query = query.where({ type: filters.type })
+  }
+  if (filters.status) {
+    query = query.where({ status: filters.status })
+  }
+  if (filters.departmentId) {
+    query = query.where({ departmentId: filters.departmentId })
+  }
+
+  const [rows, total] = await Promise.all([
+    query
+      .select("id", "serialNumber", "type", "brand", "model", "status")
+      .include("department", (d) => d.select("id", "name"))
+      .include("currentHolder", (h) => h.select("id", "name"))
+      .orderBy((e) => e.serialNumber.asc())
+      .offset((filters.page - 1) * filters.perPage)
+      .limit(filters.perPage)
+      .all(),
+    query.aggregate((a) => ({ count: a.count() })),
+  ])
+
+  return { rows, total: total.count }
+}
+
+export async function getEquipmentDetail(id: number) {
+  return db.orm.public.Equipment.where({ id })
+    .include("department", (d) => d.select("id", "name"))
+    .include("currentHolder", (h) => h.select("id", "name", "email"))
+    .include("events", (ev) =>
+      ev
+        .select(
+          "id",
+          "type",
+          "chargerIncluded",
+          "otherAccessoriesIncluded",
+          "accessoryNotes",
+          "returnReason",
+          "returnReasonNote",
+          "createdAt"
+        )
+        .include("visit", (v) =>
+          v
+            .select("id", "kind", "ticketNumber", "occurredAt")
+            .include("processedBy", (s) => s.select("id", "name"))
+            .include("counterparty", (s) => s.select("id", "name"))
+        )
+        .orderBy((e) => e.createdAt.desc())
+    )
+    .first()
+}
+
+export type StaffListFilters = {
+  page: number
+  perPage: number
+  search?: string
+  status?: StaffStatusValue
+  departmentId?: number
+}
+
+export async function getStaffPage(filters: StaffListFilters) {
+  let query = db.orm.public.Staff.where({})
+
+  if (filters.search) {
+    const term = filters.search
+    query = query.where((s) => s.name.ilike(`%${term}%`))
+  }
+  if (filters.status) {
+    query = query.where({ status: filters.status })
+  }
+  if (filters.departmentId) {
+    query = query.where({ departmentId: filters.departmentId })
+  }
+
+  const [rows, total] = await Promise.all([
+    query
+      .select("id", "name", "email", "status")
+      .include("department", (d) => d.select("id", "name"))
+      .include("heldEquipment", (e) => e.count())
+      .orderBy((s) => s.name.asc())
+      .offset((filters.page - 1) * filters.perPage)
+      .limit(filters.perPage)
+      .all(),
+    query.aggregate((a) => ({ count: a.count() })),
+  ])
+
+  return { rows, total: total.count }
+}
+
+export async function getStaffDetail(id: number) {
+  return db.orm.public.Staff.where({ id })
+    .include("department", (d) => d.select("id", "name"))
+    .include("heldEquipment", (e) =>
+      e
+        .select("id", "serialNumber", "type", "brand", "model", "status")
+        .orderBy((eq) => eq.serialNumber.asc())
+    )
+    .first()
+}
+
+export async function getDepartmentsWithCounts() {
+  return db.orm.public.Department.select("id", "name", "parentId")
+    .include("staff", (s) => s.where({ status: "active" }).count())
+    .include("equipment", (e) => e.count())
+    .orderBy((d) => d.name.asc())
+    .all()
+}
+
+export async function getDepartmentDetail(id: number) {
+  const [department, children, staff, equipment] = await Promise.all([
+    db.orm.public.Department.where({ id })
+      .include("parent", (p) => p.select("id", "name"))
+      .first(),
+    db.orm.public.Department.where({ parentId: id })
+      .select("id", "name")
+      .orderBy((d) => d.name.asc())
+      .all(),
+    db.orm.public.Staff.where({ departmentId: id, status: "active" })
+      .select("id", "name", "email")
+      .orderBy((s) => s.name.asc())
+      .all(),
+    db.orm.public.Equipment.where({ departmentId: id })
+      .select("id", "serialNumber", "type", "brand", "model", "status")
+      .include("currentHolder", (h) => h.select("id", "name"))
+      .orderBy((e) => e.serialNumber.asc())
+      .all(),
+  ])
+
+  if (!department) return null
+  return { ...department, children, staff, equipment }
 }
 
 // v1: pull the whole directory client-side for the serial combobox. Fine at

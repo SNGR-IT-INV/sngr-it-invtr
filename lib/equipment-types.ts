@@ -24,3 +24,21 @@ export const RETURN_REASONS = [
 ] as const
 
 export type ReturnReasonValue = (typeof RETURN_REASONS)[number]["value"]
+
+export const EQUIPMENT_STATUSES = [
+  { value: "in_storage", label: "In storage" },
+  { value: "reserved", label: "Reserved" },
+  { value: "handed_out", label: "Handed out" },
+  { value: "awaiting_repair", label: "Awaiting repair" },
+  { value: "retired", label: "Retired" },
+] as const
+
+export type EquipmentStatusValue = (typeof EQUIPMENT_STATUSES)[number]["value"]
+
+export const STAFF_STATUSES = [
+  { value: "active", label: "Active" },
+  { value: "on_leave", label: "On leave" },
+  { value: "resigned", label: "Resigned" },
+] as const
+
+export type StaffStatusValue = (typeof STAFF_STATUSES)[number]["value"]

@@ -36,8 +36,15 @@ import {
   type ReturnReasonValue,
 } from "@/lib/equipment-types"
 import { submitIntakeVisit, type IntakeFormState } from "./actions"
+import {
+  clearDraft,
+  isDraftWorthSaving,
+  loadDraft,
+  saveDraft,
+  type IntakeDraft,
+} from "./draft-storage"
 
-type ItemDraft = {
+export type ItemDraft = {
   clientId: string
   type: EquipmentTypeValue
   matchedEquipmentId: number | null
@@ -95,6 +102,66 @@ export function IntakeForm({
   const [signature, setSignature] = React.useState<string | null>(null)
   const [items, setItems] = React.useState<ItemDraft[]>([])
 
+  // A draft found in localStorage from an earlier, interrupted session —
+  // offered via a banner rather than silently applied, since the kiosk is
+  // walked up to by a different person every time. Gates autosave below
+  // while it's pending, so a blank first render doesn't clobber it before
+  // the person has chosen.
+  const [pendingDraft, setPendingDraft] = React.useState<IntakeDraft | null>(
+    null
+  )
+  React.useEffect(() => {
+    // One-time read of a browser API unavailable during SSR (no derived-
+    // state alternative — localStorage genuinely doesn't exist on the
+    // server, so this can't run during render without a hydration
+    // mismatch between server-rendered "no banner" and a client render
+    // that already knows about a draft).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPendingDraft(loadDraft())
+  }, [])
+
+  React.useEffect(() => {
+    if (pendingDraft) return
+    const draft = {
+      ticketNumber,
+      processedById,
+      counterparty,
+      notes,
+      signature,
+      items,
+    }
+    if (!isDraftWorthSaving(draft)) return
+    const timeout = setTimeout(() => saveDraft(draft), 500)
+    return () => clearTimeout(timeout)
+  }, [
+    pendingDraft,
+    ticketNumber,
+    processedById,
+    counterparty,
+    notes,
+    signature,
+    items,
+  ])
+
+  function resumeDraft() {
+    if (!pendingDraft) return
+    setTicketNumber(pendingDraft.ticketNumber)
+    setProcessedById(pendingDraft.processedById)
+    setCounterparty(pendingDraft.counterparty)
+    setNotes(pendingDraft.notes)
+    setItems(pendingDraft.items)
+    // Signature intentionally not restored — SignaturePad's canvas has
+    // nothing drawn on it after a reload, so leaving the old dataURL in
+    // state would enable submit with a signature nobody can see. Simpler
+    // and arguably more correct to have them sign again.
+    setPendingDraft(null)
+  }
+
+  function discardDraft() {
+    clearDraft()
+    setPendingDraft(null)
+  }
+
   const activeTypes = new Set(items.map((i) => i.type))
 
   function toggleType(type: EquipmentTypeValue, checked: boolean) {
@@ -133,6 +200,7 @@ export function IntakeForm({
     setNotes("")
     setSignature(null)
     setItems([])
+    clearDraft()
   }
 
   React.useEffect(() => {
@@ -171,6 +239,34 @@ export function IntakeForm({
       />
       <input type="hidden" name="items" value={JSON.stringify(items)} />
       <input type="hidden" name="signature" value={signature ?? ""} />
+
+      {pendingDraft ? (
+        <div className="border-warning/40 bg-warning/10 flex flex-col gap-3 rounded-lg border px-4 py-3 text-base sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            Unfinished visit found
+            {pendingDraft.ticketNumber
+              ? ` (ticket ${pendingDraft.ticketNumber})`
+              : ""}
+            {" — "}
+            {pendingDraft.items.length} item
+            {pendingDraft.items.length === 1 ? "" : "s"}. Resuming will need a
+            fresh signature.
+          </span>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-11"
+              onClick={discardDraft}
+            >
+              Discard
+            </Button>
+            <Button type="button" className="h-11" onClick={resumeDraft}>
+              Resume
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {state.status === "error" ? (
         <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm">

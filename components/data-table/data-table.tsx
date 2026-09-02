@@ -18,11 +18,15 @@ export function DataTable<TData>({
   totalRows,
   onRowClick,
   emptyMessage = "No results.",
+  itemLabel,
+  itemLabelPlural,
 }: {
   table: TanstackTable<TData>
   totalRows: number
   onRowClick?: (row: TData) => void
   emptyMessage?: string
+  itemLabel?: string
+  itemLabelPlural?: string
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -77,7 +81,12 @@ export function DataTable<TData>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} totalRows={totalRows} />
+      <DataTablePagination
+        table={table}
+        totalRows={totalRows}
+        itemLabel={itemLabel}
+        itemLabelPlural={itemLabelPlural}
+      />
     </div>
   )
 }

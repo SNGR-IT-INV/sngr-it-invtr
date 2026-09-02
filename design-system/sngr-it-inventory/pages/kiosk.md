@@ -15,7 +15,8 @@ The kiosk is not used by IT staff at a desk — it's a shared iPad at the front 
 
 ## Layout
 
-- Full-screen, **no dashboard chrome** — no sidebar, no breadcrumbs, no nav. This is a single-purpose terminal, not an admin surface. (`app/kiosk/intake/page.tsx` intentionally sits outside the `(dashboard)` route group for this reason.)
+- Full-screen, **no dashboard chrome** — no sidebar, no admin nav. This is a single-purpose terminal, not an admin surface. (`app/kiosk/intake/page.tsx` intentionally sits outside the `(dashboard)` route group for this reason.)
+- **Exception: a minimal two-crumb breadcrumb** ("Dashboard / In log") at the top, touch-sized (`min-h-11`, 44px). Without any way out, whoever's staffing the kiosk had no path back to the dashboard — revisit this once SSO/kiosk-mode gating exists, since a public-facing kiosk arguably shouldn't advertise the admin dashboard at all; for now IT staff need the escape hatch more than a stranger needs to be kept from seeing it.
 - Single column, generous vertical rhythm — this is read top-to-bottom like a paper form, not scanned like a dashboard.
 - Sticky submit bar at the bottom (already implemented) so the primary action is always reachable without scrolling back up.
 

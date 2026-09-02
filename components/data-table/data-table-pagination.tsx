@@ -16,17 +16,22 @@ export function DataTablePagination<TData>({
   table,
   totalRows,
   pageSizeOptions = [10, 20, 50],
+  itemLabel = "result",
+  itemLabelPlural,
 }: {
   table: Table<TData>
   totalRows: number
   pageSizeOptions?: number[]
+  itemLabel?: string
+  itemLabelPlural?: string
 }) {
   const { pageIndex, pageSize } = table.getState().pagination
 
   return (
     <div className="flex flex-col-reverse items-center justify-between gap-3 sm:flex-row">
       <span className="text-muted-foreground text-sm">
-        {totalRows} visit{totalRows === 1 ? "" : "s"}
+        {totalRows}{" "}
+        {totalRows === 1 ? itemLabel : (itemLabelPlural ?? `${itemLabel}s`)}
       </span>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
