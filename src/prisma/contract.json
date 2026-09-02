@@ -46,6 +46,35 @@
               }
             ]
           },
+          "EquipmentReturnReason": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "loa",
+                "value": "loa"
+              },
+              {
+                "name": "resignation",
+                "value": "resignation"
+              },
+              {
+                "name": "e_waste",
+                "value": "e_waste"
+              },
+              {
+                "name": "role_change",
+                "value": "role_change"
+              },
+              {
+                "name": "replacement",
+                "value": "replacement"
+              },
+              {
+                "name": "other",
+                "value": "other"
+              }
+            ]
+          },
           "EquipmentStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -105,6 +134,19 @@
               {
                 "name": "other",
                 "value": "other"
+              }
+            ]
+          },
+          "EquipmentVisitKind": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "in",
+                "value": "in"
+              },
+              {
+                "name": "out",
+                "value": "out"
               }
             ]
           },
@@ -455,6 +497,26 @@
                   "kind": "scalar"
                 }
               },
+              "returnReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "EquipmentReturnReason",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "returnReasonNote": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "type": {
                 "nullable": false,
                 "type": {
@@ -528,6 +590,12 @@
                 "otherAccessoriesIncluded": {
                   "column": "otherAccessoriesIncluded"
                 },
+                "returnReason": {
+                  "column": "returnReason"
+                },
+                "returnReasonNote": {
+                  "column": "returnReasonNote"
+                },
                 "type": {
                   "column": "type"
                 },
@@ -567,6 +635,19 @@
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
+                }
+              },
+              "kind": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "EquipmentVisitKind",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "notes": {
@@ -678,6 +759,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "kind": {
+                  "column": "kind"
                 },
                 "notes": {
                   "column": "notes"
@@ -1098,6 +1182,11 @@
             "equipmentEvent": {
               "checks": [
                 {
+                  "expression": "\"returnReason\" IN ('loa', 'resignation', 'e_waste', 'role_change', 'replacement', 'other')",
+                  "name": "equipmentEvent_returnReason_check_87a5273a",
+                  "prefix": "equipmentEvent_returnReason_check"
+                },
+                {
                   "expression": "\"type\" IN ('intake', 'return', 'handout')",
                   "name": "equipmentEvent_type_check_020b5bc5",
                   "prefix": "equipmentEvent_type_check"
@@ -1149,6 +1238,22 @@
                   },
                   "nativeType": "bool",
                   "nullable": false
+                },
+                "returnReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "EquipmentReturnReason",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "returnReasonNote": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "type": {
                   "codecId": "pg/text@1",
@@ -1239,6 +1344,11 @@
             "equipmentVisit": {
               "checks": [
                 {
+                  "expression": "\"kind\" IN ('in', 'out')",
+                  "name": "equipmentVisit_kind_check_1442610c",
+                  "prefix": "equipmentVisit_kind_check"
+                },
+                {
                   "expression": "\"status\" IN ('draft', 'completed')",
                   "name": "equipmentVisit_status_check_f3fa80dd",
                   "prefix": "equipmentVisit_status_check"
@@ -1272,6 +1382,21 @@
                   },
                   "nativeType": "int4",
                   "nullable": false
+                },
+                "kind": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "in"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "EquipmentVisitKind",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "notes": {
                   "codecId": "pg/text@1",
@@ -1361,6 +1486,22 @@
                   ],
                   "name": "equipmentVisit_counterpartyId_idx_d3c53383",
                   "prefix": "equipmentVisit_counterpartyId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "kind"
+                  ],
+                  "name": "equipmentVisit_kind_idx_c9ca668f",
+                  "prefix": "equipmentVisit_kind_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "occurredAt"
+                  ],
+                  "name": "equipmentVisit_occurredAt_idx_c6b89167",
+                  "prefix": "equipmentVisit_occurredAt_idx",
                   "unique": false
                 },
                 {
@@ -1515,6 +1656,17 @@
                 "handout"
               ]
             },
+            "EquipmentReturnReason": {
+              "kind": "valueSet",
+              "values": [
+                "loa",
+                "resignation",
+                "e_waste",
+                "role_change",
+                "replacement",
+                "other"
+              ]
+            },
             "EquipmentStatus": {
               "kind": "valueSet",
               "values": [
@@ -1538,6 +1690,13 @@
                 "other"
               ]
             },
+            "EquipmentVisitKind": {
+              "kind": "valueSet",
+              "values": [
+                "in",
+                "out"
+              ]
+            },
             "EquipmentVisitStatus": {
               "kind": "valueSet",
               "values": [
@@ -1559,7 +1718,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "bc473b59f0ce2674b8cbec403f4949680d998c3aef46b8c39cb2bd5cd75bbed3"
+    "storageHash": "22d82306b0a9666828e0876894b2fbf8f920006190464e5d73dc850675c5c4e4"
   },
   "capabilities": {
     "postgres": {

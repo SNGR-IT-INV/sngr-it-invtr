@@ -24,23 +24,31 @@ export async function getAllDepartments() {
 }
 
 export async function getInventoryStats() {
-  const [totalEquipment, inStorage, handedOut, awaitingRepair, departments, activeStaff] =
-    await Promise.all([
-      db.orm.public.Equipment.aggregate((a) => ({ count: a.count() })),
-      db.orm.public.Equipment.where({ status: "in_storage" }).aggregate((a) => ({
+  const [
+    totalEquipment,
+    inStorage,
+    handedOut,
+    awaitingRepair,
+    departments,
+    activeStaff,
+  ] = await Promise.all([
+    db.orm.public.Equipment.aggregate((a) => ({ count: a.count() })),
+    db.orm.public.Equipment.where({ status: "in_storage" }).aggregate((a) => ({
+      count: a.count(),
+    })),
+    db.orm.public.Equipment.where({ status: "handed_out" }).aggregate((a) => ({
+      count: a.count(),
+    })),
+    db.orm.public.Equipment.where({ status: "awaiting_repair" }).aggregate(
+      (a) => ({
         count: a.count(),
-      })),
-      db.orm.public.Equipment.where({ status: "handed_out" }).aggregate((a) => ({
-        count: a.count(),
-      })),
-      db.orm.public.Equipment.where({ status: "awaiting_repair" }).aggregate((a) => ({
-        count: a.count(),
-      })),
-      db.orm.public.Department.aggregate((a) => ({ count: a.count() })),
-      db.orm.public.Staff.where({ status: "active" }).aggregate((a) => ({
-        count: a.count(),
-      })),
-    ])
+      })
+    ),
+    db.orm.public.Department.aggregate((a) => ({ count: a.count() })),
+    db.orm.public.Staff.where({ status: "active" }).aggregate((a) => ({
+      count: a.count(),
+    })),
+  ])
 
   return {
     totalEquipment: totalEquipment.count,
@@ -65,6 +73,83 @@ export async function getRecentVisits() {
     .orderBy((v) => v.occurredAt.desc())
     .limit(8)
     .all()
+}
+
+export type VisitListFilters = {
+  kind: "in" | "out"
+  page: number
+  perPage: number
+  ticket?: string
+  status?: "draft" | "completed"
+  dateFrom?: string
+  dateTo?: string
+}
+
+export async function getVisitsPage(filters: VisitListFilters) {
+  let query = db.orm.public.EquipmentVisit.where({ kind: filters.kind })
+
+  if (filters.ticket) {
+    const term = filters.ticket
+    query = query.where((v) => v.ticketNumber.ilike(`%${term}%`))
+  }
+  if (filters.status) {
+    query = query.where({ status: filters.status })
+  }
+  if (filters.dateFrom) {
+    const from = filters.dateFrom
+    query = query.where((v) => v.occurredAt.gte(from))
+  }
+  if (filters.dateTo) {
+    // Include the whole end day.
+    const to = `${filters.dateTo}T23:59:59.999Z`
+    query = query.where((v) => v.occurredAt.lte(to))
+  }
+
+  const [rows, total] = await Promise.all([
+    query
+      .select(
+        "id",
+        "kind",
+        "status",
+        "ticketNumber",
+        "occurredAt",
+        "counterpartyNote"
+      )
+      .include("processedBy", (s) => s.select("id", "name"))
+      .include("counterparty", (s) => s.select("id", "name"))
+      .include("items", (i) => i.count())
+      .orderBy((v) => v.occurredAt.desc())
+      .offset((filters.page - 1) * filters.perPage)
+      .limit(filters.perPage)
+      .all(),
+    query.aggregate((a) => ({ count: a.count() })),
+  ])
+
+  return { rows, total: total.count }
+}
+
+export async function getVisitDetail(id: number) {
+  return db.orm.public.EquipmentVisit.where({ id })
+    .include("processedBy", (s) => s.select("id", "name", "email"))
+    .include("counterparty", (s) => s.select("id", "name", "email"))
+    .include("items", (i) =>
+      i
+        .select(
+          "id",
+          "type",
+          "chargerIncluded",
+          "otherAccessoriesIncluded",
+          "accessoryNotes",
+          "returnReason",
+          "returnReasonNote"
+        )
+        .include("equipment", (e) =>
+          e
+            .select("id", "serialNumber", "type", "brand", "model", "status")
+            .include("department", (d) => d.select("id", "name"))
+        )
+    )
+    .first()
 }
 
 // v1: pull the whole directory client-side for the serial combobox. Fine at

@@ -4,11 +4,21 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 import { db } from "@/src/prisma/db"
-import { EQUIPMENT_TYPES, type EquipmentTypeValue } from "@/lib/equipment-types"
+import {
+  EQUIPMENT_TYPES,
+  RETURN_REASONS,
+  type EquipmentTypeValue,
+  type ReturnReasonValue,
+} from "@/lib/equipment-types"
 
 const equipmentTypeValues = EQUIPMENT_TYPES.map((t) => t.value) as [
   EquipmentTypeValue,
   ...EquipmentTypeValue[],
+]
+
+const returnReasonValues = RETURN_REASONS.map((r) => r.value) as [
+  ReturnReasonValue,
+  ...ReturnReasonValue[],
 ]
 
 const itemSchema = z
@@ -22,15 +32,35 @@ const itemSchema = z
     chargerIncluded: z.boolean(),
     otherAccessoriesIncluded: z.boolean(),
     accessoryNotes: z.string().trim().nullable(),
+    returnReason: z.enum(returnReasonValues).nullable(),
+    returnReasonNote: z.string().trim().nullable(),
   })
-  .refine((item) => item.matchedEquipmentId !== null || item.departmentId !== null, {
-    message: "Pick which department new equipment belongs to",
-    path: ["departmentId"],
-  })
+  .refine(
+    (item) => item.matchedEquipmentId !== null || item.departmentId !== null,
+    {
+      message: "Pick which department new equipment belongs to",
+      path: ["departmentId"],
+    }
+  )
+  .refine(
+    (item) => item.matchedEquipmentId === null || item.returnReason !== null,
+    {
+      message: "Pick a reason for the return",
+      path: ["returnReason"],
+    }
+  )
+  .refine(
+    (item) => item.returnReason !== "other" || !!item.returnReasonNote?.trim(),
+    { message: "Say what the reason is", path: ["returnReasonNote"] }
+  )
 
 const partySchema = z
   .union([
-    z.object({ kind: z.literal("staff"), id: z.number().int().positive(), name: z.string() }),
+    z.object({
+      kind: z.literal("staff"),
+      id: z.number().int().positive(),
+      name: z.string(),
+    }),
     z.object({ kind: z.literal("text"), name: z.string().trim().min(1) }),
   ])
   .nullable()
@@ -90,10 +120,13 @@ export async function submitIntakeVisit(
   try {
     const visitId = await db.transaction(async (tx) => {
       const visit = await tx.orm.public.EquipmentVisit.create({
+        kind: "in",
         ticketNumber: data.ticketNumber,
         processedById: data.processedById,
-        counterpartyId: data.counterparty?.kind === "staff" ? data.counterparty.id : null,
-        counterpartyNote: data.counterparty?.kind === "text" ? data.counterparty.name : null,
+        counterpartyId:
+          data.counterparty?.kind === "staff" ? data.counterparty.id : null,
+        counterpartyNote:
+          data.counterparty?.kind === "text" ? data.counterparty.name : null,
         // Placeholder storage: the raw data: URL goes straight into the column
         // for now. Swap for a Blob upload (see project notes) without
         // touching the rest of this action — only this line changes.
@@ -106,10 +139,13 @@ export async function submitIntakeVisit(
         let eventType: "intake" | "return"
 
         if (item.matchedEquipmentId) {
-          const updated = await tx.orm.public.Equipment.where({ id: item.matchedEquipmentId })
+          const updated = await tx.orm.public.Equipment.where({
+            id: item.matchedEquipmentId,
+          })
             .select("id")
             .update({ status: "in_storage", currentHolderId: null })
-          if (!updated) throw new Error("That matched equipment no longer exists.")
+          if (!updated)
+            throw new Error("That matched equipment no longer exists.")
           equipmentId = updated.id
           eventType = "return"
         } else {
@@ -132,6 +168,11 @@ export async function submitIntakeVisit(
           chargerIncluded: item.chargerIncluded,
           otherAccessoriesIncluded: item.otherAccessoriesIncluded,
           accessoryNotes: item.accessoryNotes,
+          returnReason: eventType === "return" ? item.returnReason : null,
+          returnReasonNote:
+            eventType === "return" && item.returnReason === "other"
+              ? item.returnReasonNote
+              : null,
         })
       }
 

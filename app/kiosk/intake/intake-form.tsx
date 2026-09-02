@@ -29,7 +29,12 @@ import {
   type EquipmentOption,
 } from "@/components/equipment-serial-combobox"
 import { SignaturePad } from "@/components/signature-pad"
-import { EQUIPMENT_TYPES, type EquipmentTypeValue } from "@/lib/equipment-types"
+import {
+  EQUIPMENT_TYPES,
+  RETURN_REASONS,
+  type EquipmentTypeValue,
+  type ReturnReasonValue,
+} from "@/lib/equipment-types"
 import { submitIntakeVisit, type IntakeFormState } from "./actions"
 
 type ItemDraft = {
@@ -43,6 +48,8 @@ type ItemDraft = {
   chargerIncluded: boolean
   otherAccessoriesIncluded: boolean
   accessoryNotes: string
+  returnReason: ReturnReasonValue | null
+  returnReasonNote: string
 }
 
 function blankItem(type: EquipmentTypeValue): ItemDraft {
@@ -57,6 +64,8 @@ function blankItem(type: EquipmentTypeValue): ItemDraft {
     chargerIncluded: false,
     otherAccessoriesIncluded: false,
     accessoryNotes: "",
+    returnReason: null,
+    returnReasonNote: "",
   }
 }
 
@@ -74,7 +83,10 @@ export function IntakeForm({
   equipment: EquipmentOption[]
 }) {
   const router = useRouter()
-  const [state, formAction, pending] = useActionState(submitIntakeVisit, initialState)
+  const [state, formAction, pending] = useActionState(
+    submitIntakeVisit,
+    initialState
+  )
 
   const [ticketNumber, setTicketNumber] = React.useState("")
   const [processedById, setProcessedById] = React.useState("")
@@ -110,9 +122,9 @@ export function IntakeForm({
   // Reset the form once per successful submission — a render-time state
   // adjustment (guarded by this tracker) rather than an effect, per React's
   // guidance on syncing local state to a changed prop/value.
-  const [lastHandledVisitId, setLastHandledVisitId] = React.useState<number | null>(
-    null
-  )
+  const [lastHandledVisitId, setLastHandledVisitId] = React.useState<
+    number | null
+  >(null)
   if (state.status === "success" && state.visitId !== lastHandledVisitId) {
     setLastHandledVisitId(state.visitId)
     setTicketNumber("")
@@ -134,12 +146,20 @@ export function IntakeForm({
     items: items.filter((i) => i.type === t.value),
   }))
 
+  const returnsMissingReason = items.some(
+    (i) =>
+      i.matchedEquipmentId !== null &&
+      (!i.returnReason ||
+        (i.returnReason === "other" && !i.returnReasonNote.trim()))
+  )
+
   const canSubmit =
     !pending &&
     items.length > 0 &&
     !!signature &&
     !!processedById &&
-    !!ticketNumber.trim()
+    !!ticketNumber.trim() &&
+    !returnsMissingReason
 
   return (
     <form action={formAction} className="flex flex-col gap-6 pb-24">
@@ -153,12 +173,12 @@ export function IntakeForm({
       <input type="hidden" name="signature" value={signature ?? ""} />
 
       {state.status === "error" ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm">
           {state.message}
         </div>
       ) : null}
       {state.status === "success" ? (
-        <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm">
+        <div className="border-primary/30 bg-primary/10 rounded-lg border px-4 py-3 text-sm">
           Visit logged — {state.itemCount} item
           {state.itemCount === 1 ? "" : "s"} recorded. Ready for the next one.
         </div>
@@ -188,7 +208,10 @@ export function IntakeForm({
               value={processedById}
               onValueChange={(v) => setProcessedById(v ?? "")}
             >
-              <SelectTrigger aria-label="Received by" className="h-11 w-full text-base">
+              <SelectTrigger
+                aria-label="Received by"
+                className="h-11 w-full text-base"
+              >
                 <SelectValue placeholder="Who's logging this?" />
               </SelectTrigger>
               <SelectContent>
@@ -234,7 +257,7 @@ export function IntakeForm({
             {EQUIPMENT_TYPES.map((t) => (
               <label
                 key={t.value}
-                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5"
+                className="has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base"
               >
                 <Checkbox
                   className="size-5"
@@ -278,7 +301,7 @@ export function IntakeForm({
             ))}
 
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Check off what arrived above to start logging items.
             </p>
           ) : null}
@@ -301,9 +324,9 @@ export function IntakeForm({
         </CardContent>
       </Card>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-4 backdrop-blur">
+      <div className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t p-4 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
-          <span className="text-base text-muted-foreground">
+          <span className="text-muted-foreground text-base">
             {items.length} item{items.length === 1 ? "" : "s"}
           </span>
           <Button
@@ -337,8 +360,10 @@ function ItemCard({
   return (
     <div className="flex flex-col gap-3 rounded-lg border p-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
-          {isReturn ? "Return — already in the system" : "New — not seen before"}
+        <span className="text-muted-foreground text-xs">
+          {isReturn
+            ? "Return — already in the system"
+            : "New — not seen before"}
         </span>
         <Button
           type="button"
@@ -400,9 +425,14 @@ function ItemCard({
             <Label>Department</Label>
             <Select
               value={item.departmentId ? String(item.departmentId) : ""}
-              onValueChange={(v) => onChange({ departmentId: v ? Number(v) : null })}
+              onValueChange={(v) =>
+                onChange({ departmentId: v ? Number(v) : null })
+              }
             >
-              <SelectTrigger aria-label="Department" className="h-11 w-full text-base">
+              <SelectTrigger
+                aria-label="Department"
+                className="h-11 w-full text-base"
+              >
                 <SelectValue placeholder="Which department is this for?" />
               </SelectTrigger>
               <SelectContent>
@@ -414,11 +444,43 @@ function ItemCard({
               </SelectContent>
             </Select>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
+            <Label>Why is this coming back?</Label>
+            <Select
+              value={item.returnReason ?? ""}
+              onValueChange={(v) =>
+                onChange({ returnReason: (v as ReturnReasonValue) || null })
+              }
+            >
+              <SelectTrigger
+                aria-label="Return reason"
+                className="h-11 w-full text-base"
+              >
+                <SelectValue placeholder="Select a reason" />
+              </SelectTrigger>
+              <SelectContent>
+                {RETURN_REASONS.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {item.returnReason === "other" ? (
+              <Input
+                className="h-11 text-base"
+                value={item.returnReasonNote}
+                onChange={(e) => onChange({ returnReasonNote: e.target.value })}
+                placeholder="What's the reason?"
+              />
+            ) : null}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <label className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10">
+        <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base">
           <Checkbox
             className="size-5"
             checked={item.chargerIncluded}
@@ -426,7 +488,7 @@ function ItemCard({
           />
           Charger taken too
         </label>
-        <label className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10">
+        <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base">
           <Checkbox
             className="size-5"
             checked={item.otherAccessoriesIncluded}

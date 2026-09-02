@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'22d82306b0a9666828e0876894b2fbf8f920006190464e5d73dc850675c5c4e4'>;
+  StorageHashBase<'23eca8fe905950a244b129d062dae6264e7468c141e35c8a7d908f16a50726ea'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -280,7 +280,6 @@ export type FieldOutputTypes = {
     };
     readonly EquipmentVisit: {
       readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly kind: 'in' | 'out';
       readonly status: 'draft' | 'completed';
       readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly ticketNumber: CodecTypes['pg/text@1']['output'];
@@ -344,7 +343,6 @@ export type FieldInputTypes = {
     };
     readonly EquipmentVisit: {
       readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly kind: 'in' | 'out';
       readonly status: 'draft' | 'completed';
       readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly ticketNumber: CodecTypes['pg/text@1']['input'];
@@ -411,7 +409,6 @@ export type StorageColumnTypes = {
       readonly counterpartyNote: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
-      readonly kind: 'in' | 'out';
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly processedById: CodecTypes['pg/int4@1']['output'] | null;
@@ -475,7 +472,6 @@ export type StorageColumnInputTypes = {
       readonly counterpartyNote: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
-      readonly kind: 'in' | 'out';
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly processedById: CodecTypes['pg/int4@1']['input'] | null;
@@ -801,15 +797,6 @@ type ContractBase = Omit<
                     readonly expression: 'autoincrement()';
                   };
                 };
-                readonly kind: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'in'>;
-                  };
-                };
                 readonly status: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -875,18 +862,6 @@ type ContractBase = Omit<
                   readonly name: 'equipmentVisit_status_idx_e98638ab';
                   readonly prefix: 'equipmentVisit_status_idx';
                   readonly columns: readonly ['status'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'equipmentVisit_kind_idx_c9ca668f';
-                  readonly prefix: 'equipmentVisit_kind_idx';
-                  readonly columns: readonly ['kind'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'equipmentVisit_occurredAt_idx_c6b89167';
-                  readonly prefix: 'equipmentVisit_occurredAt_idx';
-                  readonly columns: readonly ['occurredAt'];
                   readonly unique: false;
                 },
                 {
@@ -1043,10 +1018,6 @@ type ContractBase = Omit<
                 'ipad',
                 'other',
               ];
-            };
-            readonly EquipmentVisitKind: {
-              readonly kind: 'valueSet';
-              readonly values: readonly ['in', 'out'];
             };
             readonly EquipmentVisitStatus: {
               readonly kind: 'valueSet';
@@ -1351,10 +1322,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
-              readonly kind: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly status: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1438,7 +1405,6 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly id: { readonly column: 'id' };
-                readonly kind: { readonly column: 'kind' };
                 readonly status: { readonly column: 'status' };
                 readonly occurredAt: { readonly column: 'occurredAt' };
                 readonly ticketNumber: { readonly column: 'ticketNumber' };
@@ -1595,13 +1561,6 @@ type ContractBase = Omit<
               { readonly name: 'role_change'; readonly value: 'role_change' },
               { readonly name: 'replacement'; readonly value: 'replacement' },
               { readonly name: 'other'; readonly value: 'other' },
-            ];
-          };
-          readonly EquipmentVisitKind: {
-            readonly codecId: 'pg/text@1';
-            readonly members: readonly [
-              { readonly name: 'in'; readonly value: 'in' },
-              { readonly name: 'out'; readonly value: 'out' },
             ];
           };
           readonly EquipmentVisitStatus: {

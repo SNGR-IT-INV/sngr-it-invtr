@@ -115,6 +115,28 @@ enum EquipmentEventType {
   handout = "handout"
 }
 
+// Why a return is coming back — only meaningful on return-type events.
+enum EquipmentReturnReason {
+  @@type("pg/text@1")
+  loa         = "loa"
+  resignation = "resignation"
+  e_waste     = "e_waste"
+  role_change = "role_change"
+  replacement = "replacement"
+  other       = "other"
+}
+
+// Which kiosk flow created this visit — determines whether it belongs on
+// the in-log or out-log table. Deliberately its own explicit field rather
+// than derived from the items' event types: it's simpler and faster to
+// query directly, and it's genuinely what the visit *is*, categorically,
+// not just an emergent property of what's in it.
+enum EquipmentVisitKind {
+  @@type("pg/text@1")
+  in  = "in"
+  out = "out"
+}
+
 enum EquipmentVisitStatus {
   @@type("pg/text@1")
   // In-log visits are always created already-complete (walk-up, one
@@ -130,6 +152,7 @@ enum EquipmentVisitStatus {
 // offboarding ticket). This is the kiosk "in log" / "out log" header.
 model EquipmentVisit {
   id           Int                  @id @default(autoincrement())
+  kind         EquipmentVisitKind   @default(in)
   status       EquipmentVisitStatus @default(completed)
   occurredAt   TimestamptzString    @default(now())
   ticketNumber String
@@ -159,6 +182,8 @@ model EquipmentVisit {
 
   @@index([ticketNumber])
   @@index([status])
+  @@index([kind])
+  @@index([occurredAt])
 }
 
 // One equipment line item within a visit. Intake vs. return isn't chosen by
@@ -178,6 +203,10 @@ model EquipmentEvent {
   chargerIncluded          Boolean @default(false)
   otherAccessoriesIncluded Boolean @default(false)
   accessoryNotes           String?
+
+  // Why this item is coming back — return-type events only.
+  returnReason     EquipmentReturnReason?
+  returnReasonNote String?
 
   createdAt TimestamptzString @default(now())
 

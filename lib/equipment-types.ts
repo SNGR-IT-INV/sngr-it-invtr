@@ -13,3 +13,14 @@ export const EQUIPMENT_TYPES = [
 ] as const
 
 export type EquipmentTypeValue = (typeof EQUIPMENT_TYPES)[number]["value"]
+
+export const RETURN_REASONS = [
+  { value: "loa", label: "Leave of absence" },
+  { value: "resignation", label: "Resignation" },
+  { value: "e_waste", label: "E-waste / end of life" },
+  { value: "role_change", label: "Role / department change" },
+  { value: "replacement", label: "Replacement (fault or upgrade)" },
+  { value: "other", label: "Other" },
+] as const
+
+export type ReturnReasonValue = (typeof RETURN_REASONS)[number]["value"]
