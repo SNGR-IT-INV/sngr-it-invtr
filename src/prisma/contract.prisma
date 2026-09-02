@@ -1,0 +1,187 @@
+// use prisma-next
+
+// A department, or sub-department, in the org. Sub-departments are just
+// departments with a parent — they own their own staff and equipment.
+// IT itself is one row here; its members are the Staff who show up as
+// `processedBy` on EquipmentEvent.
+model Department {
+  id       Int         @id @default(autoincrement())
+  name     String      @unique
+  parent   Department? @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  parentId Int?
+  children Department[] @relation("DepartmentHierarchy")
+
+  staff     Staff[]
+  equipment Equipment[]
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([parentId])
+}
+
+enum StaffStatus {
+  @@type("pg/text@1")
+  active   = "active"
+  on_leave = "on_leave"
+  resigned = "resigned"
+}
+
+// A person in the org — one row per actual human, never renamed for a
+// successor. Covers both the department staff who request, hold, and return
+// equipment, and the IT staff who process visits — IT staff are just Staff
+// rows belonging to the IT department.
+//
+// Note: user IDs/accounts here are often tied to a *position*, not a person
+// — a new hire can inherit a predecessor's account. When that happens, don't
+// rename the predecessor's row (it would rewrite the history on their past
+// events); clear `email` on their row if the account moves on, and create a
+// fresh Staff row for the new occupant.
+model Staff {
+  id           Int         @id @default(autoincrement())
+  name         String
+  email        String?     @unique
+  // The Microsoft Entra (Azure AD) object id, once staff are looked up live
+  // against Graph instead of entered by hand. Nullable — rows created before
+  // that integration, or for people found without a matching directory
+  // record, simply have no link.
+  azureAdId    String?     @unique
+  status       StaffStatus @default(active)
+  department   Department  @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  departmentId Int
+
+  heldEquipment      Equipment[]      @relation("EquipmentHolder")
+  processedVisits    EquipmentVisit[] @relation("VisitsProcessed")
+  counterpartyVisits EquipmentVisit[] @relation("VisitsCounterparty")
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([departmentId])
+}
+
+enum EquipmentType {
+  @@type("pg/text@1")
+  laptop          = "laptop"
+  desktop         = "desktop"
+  docking_station = "docking_station"
+  monitor         = "monitor"
+  printer         = "printer"
+  iphone          = "iphone"
+  ipad            = "ipad"
+  other           = "other"
+}
+
+enum EquipmentStatus {
+  @@type("pg/text@1")
+  in_storage      = "in_storage"
+  // Prepped for a specific out-log visit but not yet handed over — keeps it
+  // from looking like free stock between prep and pickup.
+  reserved        = "reserved"
+  handed_out      = "handed_out"
+  awaiting_repair = "awaiting_repair"
+  retired         = "retired"
+}
+
+// A single physical asset, tracked by serial number for its whole lifecycle.
+model Equipment {
+  id           Int             @id @default(autoincrement())
+  type         EquipmentType
+  brand        String          @default("HP")
+  model        String?
+  serialNumber String          @unique
+  status       EquipmentStatus @default(in_storage)
+
+  // Owning department — nullable only for equipment IT owns itself (e.g. loaner
+  // stock), not for department-purchased gear sitting in IT storage.
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  departmentId Int?
+
+  // Set while status = handed_out; null while in storage / retired.
+  currentHolder   Staff? @relation("EquipmentHolder", fields: [currentHolderId], references: [id], onDelete: SetNull)
+  currentHolderId Int?
+
+  events EquipmentEvent[]
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([departmentId])
+  @@index([currentHolderId])
+  @@index([status])
+}
+
+enum EquipmentEventType {
+  @@type("pg/text@1")
+  intake  = "intake"
+  return  = "return"
+  handout = "handout"
+}
+
+enum EquipmentVisitStatus {
+  @@type("pg/text@1")
+  // In-log visits are always created already-complete (walk-up, one
+  // continuous transaction). Out-log visits start `draft` at prep time —
+  // ticket + items + recipient known, nobody's signed yet — and flip to
+  // `completed` at pickup, whenever that turns out to be.
+  draft     = "draft"
+  completed = "completed"
+}
+
+// One visit to the IT desk — one ticket, one signature, covering one or more
+// equipment items (e.g. a laptop and a phone returned together on the same
+// offboarding ticket). This is the kiosk "in log" / "out log" header.
+model EquipmentVisit {
+  id           Int                  @id @default(autoincrement())
+  status       EquipmentVisitStatus @default(completed)
+  occurredAt   TimestamptzString    @default(now())
+  ticketNumber String
+
+  // The IT staffer who handled this visit — for in-log, whoever's at the
+  // kiosk; for out-log, whoever completes the pickup, which may be someone
+  // other than who prepped it. Null while status = draft.
+  processedBy   Staff? @relation("VisitsProcessed", fields: [processedById], references: [id], onDelete: Restrict)
+  processedById Int?
+
+  // In-log: whoever physically brought the equipment in (not always its
+  // owner — could be an assistant or HR). Out-log: the recipient picking up
+  // — known at prep time, before they've signed. Nullable + free-text
+  // fallback for anyone not in the system (e.g. a courier).
+  counterparty     Staff?  @relation("VisitsCounterparty", fields: [counterpartyId], references: [id], onDelete: SetNull)
+  counterpartyId   Int?
+  counterpartyNote String?
+
+  // Signature captured on the kiosk canvas, stored as an image (Blob URL).
+  // Null until the visit is completed.
+  signatureUrl String?
+  notes        String?
+
+  items EquipmentEvent[]
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([ticketNumber])
+  @@index([status])
+}
+
+// One equipment line item within a visit. Intake vs. return isn't chosen by
+// hand — it falls out of whether the serial number already exists.
+model EquipmentEvent {
+  id   Int                @id @default(autoincrement())
+  type EquipmentEventType
+
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  equipmentId Int
+
+  visit   EquipmentVisit @relation(fields: [visitId], references: [id], onDelete: Restrict)
+  visitId Int
+
+  // Typically refused at intake ("no chargers, no accessories") — flipped on
+  // for the exceptions, with a note on why.
+  chargerIncluded          Boolean @default(false)
+  otherAccessoriesIncluded Boolean @default(false)
+  accessoryNotes           String?
+
+  createdAt TimestamptzString @default(now())
+
+  @@index([equipmentId])
+  @@index([type])
+  @@index([visitId])
+}
