@@ -5,10 +5,10 @@
 // IT itself is one row here; its members are the Staff who show up as
 // `processedBy` on EquipmentEvent.
 model Department {
-  id       Int          @id @default(autoincrement())
+  id       String       @id @default(uuid(7))
   name     String       @unique
   parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  parentId Int?
+  parentId String?
   children Department[] @relation("DepartmentHierarchy")
 
   staff     Staff[]
@@ -38,7 +38,7 @@ enum StaffStatus {
 // events); clear `email` on their row if the account moves on, and create a
 // fresh Staff row for the new occupant.
 model Staff {
-  id           Int         @id @default(autoincrement())
+  id           String      @id @default(uuid(7))
   name         String
   email        String?     @unique
   // The Microsoft Entra (Azure AD) object id, once staff are looked up live
@@ -48,7 +48,7 @@ model Staff {
   azureAdId    String?     @unique
   status       StaffStatus @default(active)
   department   Department  @relation(fields: [departmentId], references: [id], onDelete: Restrict)
-  departmentId Int
+  departmentId String
 
   heldEquipment      Equipment[]      @relation("EquipmentHolder")
   processedVisits    EquipmentVisit[] @relation("VisitsProcessed")
@@ -87,7 +87,7 @@ enum EquipmentStatus {
 
 // A single physical asset, tracked by serial number for its whole lifecycle.
 model Equipment {
-  id           Int             @id @default(autoincrement())
+  id           String          @id @default(uuid(7))
   type         EquipmentType
   brand        String          @default("HP")
   model        String?
@@ -97,11 +97,11 @@ model Equipment {
   // Owning department — nullable only for equipment IT owns itself (e.g. loaner
   // stock), not for department-purchased gear sitting in IT storage.
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: Restrict)
-  departmentId Int?
+  departmentId String?
 
   // Set while status = handed_out; null while in storage / retired.
-  currentHolder   Staff? @relation("EquipmentHolder", fields: [currentHolderId], references: [id], onDelete: SetNull)
-  currentHolderId Int?
+  currentHolder   Staff?  @relation("EquipmentHolder", fields: [currentHolderId], references: [id], onDelete: SetNull)
+  currentHolderId String?
 
   events EquipmentEvent[]
 
@@ -166,7 +166,7 @@ enum EquipmentVisitStatus {
 // ticketNumber/quoteNumber for the per-item version that actually applies
 // to in-log.
 model EquipmentVisit {
-  id           Int                  @id @default(autoincrement())
+  id           String               @id @default(uuid(7))
   kind         EquipmentVisitKind   @default(in)
   status       EquipmentVisitStatus @default(completed)
   occurredAt   TimestamptzString    @default(now())
@@ -175,15 +175,15 @@ model EquipmentVisit {
   // The IT staffer who handled this visit — for in-log, whoever's at the
   // kiosk; for out-log, whoever completes the pickup, which may be someone
   // other than who prepped it. Null while status = draft.
-  processedBy   Staff? @relation("VisitsProcessed", fields: [processedById], references: [id], onDelete: Restrict)
-  processedById Int?
+  processedBy   Staff?  @relation("VisitsProcessed", fields: [processedById], references: [id], onDelete: Restrict)
+  processedById String?
 
   // In-log: whoever physically brought the equipment in (not always its
   // owner — could be an assistant or HR). Out-log: the recipient picking up
   // — known at prep time, before they've signed. Nullable + free-text
   // fallback for anyone not in the system (e.g. a courier).
   counterparty     Staff?  @relation("VisitsCounterparty", fields: [counterpartyId], references: [id], onDelete: SetNull)
-  counterpartyId   Int?
+  counterpartyId   String?
   counterpartyNote String?
 
   // Signature captured on the kiosk canvas, stored as an image (Blob URL).
@@ -204,14 +204,14 @@ model EquipmentVisit {
 // One equipment line item within a visit. Intake vs. return isn't chosen by
 // hand — it falls out of whether the serial number already exists.
 model EquipmentEvent {
-  id   Int                @id @default(autoincrement())
+  id   String             @id @default(uuid(7))
   type EquipmentEventType
 
   equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
-  equipmentId Int
+  equipmentId String
 
   visit   EquipmentVisit @relation(fields: [visitId], references: [id], onDelete: Restrict)
-  visitId Int
+  visitId String
 
   // Typically refused at intake ("no chargers, no accessories") — flipped on
   // for the exceptions, with a note on why.
@@ -235,8 +235,8 @@ model EquipmentEvent {
   // from Equipment.currentHolder, which is only set at actual handout.
   // Optional: a department can stock up ahead of a hire with nobody
   // named yet.
-  intendedFor   Staff? @relation("EventIntendedRecipient", fields: [intendedForId], references: [id], onDelete: SetNull)
-  intendedForId Int?
+  intendedFor   Staff?  @relation("EventIntendedRecipient", fields: [intendedForId], references: [id], onDelete: SetNull)
+  intendedForId String?
 
   createdAt TimestamptzString @default(now())
 

@@ -13,7 +13,7 @@ export const equipmentSearchParams = {
   search: parseAsString,
   type: parseAsStringEnum(EQUIPMENT_TYPES.map((t) => t.value)),
   status: parseAsStringEnum(EQUIPMENT_STATUSES.map((s) => s.value)),
-  departmentId: parseAsInteger,
+  departmentId: parseAsString,
 }
 
 export const equipmentSearchParamsCache = createSearchParamsCache(

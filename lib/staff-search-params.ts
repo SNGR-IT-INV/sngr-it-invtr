@@ -12,7 +12,7 @@ export const staffSearchParams = {
   perPage: parseAsInteger.withDefault(10),
   search: parseAsString,
   status: parseAsStringEnum(STAFF_STATUSES.map((s) => s.value)),
-  departmentId: parseAsInteger,
+  departmentId: parseAsString,
 }
 
 export const staffSearchParamsCache = createSearchParamsCache(staffSearchParams)

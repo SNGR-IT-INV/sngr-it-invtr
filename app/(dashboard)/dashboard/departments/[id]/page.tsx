@@ -21,7 +21,7 @@ export default async function DepartmentDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const department = await getDepartmentDetail(Number(id))
+  const department = await getDepartmentDetail(id)
   if (!department) notFound()
 
   return (

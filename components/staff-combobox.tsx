@@ -13,16 +13,20 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 export type StaffOption = {
-  id: number
+  id: string
   name: string
   department?: string | null
 }
 
 export type StaffPartyValue =
-  | { kind: "staff"; id: number; name: string }
+  | { kind: "staff"; id: string; name: string }
   | { kind: "text"; name: string }
   | null
 
@@ -78,7 +82,7 @@ export function StaffCombobox({
                 .map((s) => (
                   <CommandItem
                     key={s.id}
-                    value={String(s.id)}
+                    value={s.id}
                     onSelect={() => {
                       onChange({ kind: "staff", id: s.id, name: s.name })
                       setQuery("")
@@ -96,7 +100,7 @@ export function StaffCombobox({
                     <span className="flex flex-col">
                       <span>{s.name}</span>
                       {s.department ? (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {s.department}
                         </span>
                       ) : null}

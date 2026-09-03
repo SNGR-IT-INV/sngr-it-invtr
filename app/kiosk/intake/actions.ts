@@ -24,11 +24,11 @@ const returnReasonValues = RETURN_REASONS.map((r) => r.value) as [
 const itemSchema = z
   .object({
     type: z.enum(equipmentTypeValues),
-    matchedEquipmentId: z.number().int().positive().nullable(),
+    matchedEquipmentId: z.uuid().nullable(),
     serialNumber: z.string().trim().min(1, "Serial number is required"),
     brand: z.string().trim().min(1, "Brand is required"),
     model: z.string().trim().nullable(),
-    departmentId: z.number().int().positive().nullable(),
+    departmentId: z.uuid().nullable(),
     chargerIncluded: z.boolean(),
     otherAccessoriesIncluded: z.boolean(),
     accessoryNotes: z.string().trim().nullable(),
@@ -38,7 +38,7 @@ const itemSchema = z
     // order, a walk-in with no ticket handy) have none of these.
     ticketNumber: z.string().trim().nullable(),
     quoteNumber: z.string().trim().nullable(),
-    intendedForId: z.number().int().positive().nullable(),
+    intendedForId: z.uuid().nullable(),
   })
   .refine(
     (item) => item.matchedEquipmentId !== null || item.departmentId !== null,
@@ -63,7 +63,7 @@ const partySchema = z
   .union([
     z.object({
       kind: z.literal("staff"),
-      id: z.number().int().positive(),
+      id: z.uuid(),
       name: z.string(),
     }),
     z.object({ kind: z.literal("text"), name: z.string().trim().min(1) }),
@@ -76,10 +76,7 @@ const visitSchema = z.object({
   // future action will require this here since it's still one ticket per
   // prepared pickup.
   ticketNumber: z.string().trim().nullable(),
-  processedById: z.coerce
-    .number({ message: "Pick who received it" })
-    .int()
-    .positive(),
+  processedById: z.uuid({ message: "Pick who received it" }),
   notes: z.string().trim().nullable(),
   // Not collected on in-log — a quick walk-in/walk-out shouldn't need a
   // signature. Out-log will require one at pickup.
@@ -91,7 +88,7 @@ const visitSchema = z.object({
 export type IntakeFormState =
   | { status: "idle" }
   | { status: "error"; message: string }
-  | { status: "success"; visitId: number; itemCount: number }
+  | { status: "success"; visitId: string; itemCount: number }
 
 function parseJson(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || value.length === 0) return null
@@ -146,7 +143,7 @@ export async function submitIntakeVisit(
       })
 
       for (const item of data.items) {
-        let equipmentId: number
+        let equipmentId: string
         let eventType: "intake" | "return"
 
         if (item.matchedEquipmentId) {

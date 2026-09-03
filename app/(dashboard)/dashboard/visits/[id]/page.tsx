@@ -25,7 +25,7 @@ export default async function VisitDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const visit = await getVisitDetail(Number(id))
+  const visit = await getVisitDetail(id)
   if (!visit) notFound()
 
   const backHref =
@@ -170,6 +170,14 @@ export default async function VisitDetailPage({
                         For: {item.intendedFor.name}
                       </p>
                     ) : null}
+                    <Link
+                      href={`/label/event/${item.id}`}
+                      target="_blank"
+                      className="text-muted-foreground hover:text-foreground mt-1 flex w-fit items-center gap-1 text-xs"
+                    >
+                      <Icon icon="tabler:printer" className="size-3.5" />
+                      Print label
+                    </Link>
                   </div>
                 </div>
               )

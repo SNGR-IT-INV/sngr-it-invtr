@@ -24,7 +24,7 @@ export default async function StaffDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const staff = await getStaffDetail(Number(id))
+  const staff = await getStaffDetail(id)
   if (!staff) notFound()
 
   return (

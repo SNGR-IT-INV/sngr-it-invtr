@@ -13,18 +13,22 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import type { EquipmentTypeValue } from "@/lib/equipment-types"
 
 export type EquipmentOption = {
-  id: number
+  id: string
   serialNumber: string
   type: EquipmentTypeValue
   brand: string
   model: string | null
   status: string
-  department: { id: number; name: string } | null
-  currentHolder: { id: number; name: string } | null
+  department: { id: string; name: string } | null
+  currentHolder: { id: string; name: string } | null
 }
 
 export function EquipmentSerialCombobox({
@@ -47,7 +51,9 @@ export function EquipmentSerialCombobox({
       equipment
         .filter((e) => e.type === type)
         .filter((e) =>
-          e.serialNumber.toLowerCase().includes(serialNumber.trim().toLowerCase())
+          e.serialNumber
+            .toLowerCase()
+            .includes(serialNumber.trim().toLowerCase())
         )
         .slice(0, 30),
     [equipment, type, serialNumber]
@@ -65,7 +71,7 @@ export function EquipmentSerialCombobox({
         <span
           className={cn(
             "truncate font-mono",
-            !serialNumber && "font-sans text-muted-foreground"
+            !serialNumber && "text-muted-foreground font-sans"
           )}
         >
           {serialNumber || "Scan or type serial number…"}
@@ -90,7 +96,7 @@ export function EquipmentSerialCombobox({
               {candidates.map((e) => (
                 <CommandItem
                   key={e.id}
-                  value={String(e.id)}
+                  value={e.id}
                   onSelect={() => {
                     onSerialChange(e.serialNumber)
                     onMatch(e)
@@ -103,7 +109,7 @@ export function EquipmentSerialCombobox({
                   />
                   <span className="flex flex-col">
                     <span className="font-mono">{e.serialNumber}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {e.brand} {e.model ?? ""} ·{" "}
                       {e.currentHolder
                         ? `with ${e.currentHolder.name}`

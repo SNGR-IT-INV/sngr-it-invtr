@@ -194,7 +194,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -208,7 +208,7 @@
               "parentId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               }
@@ -313,21 +313,21 @@
               "currentHolderId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "departmentId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -479,21 +479,21 @@
               "equipmentId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
               "intendedForId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -554,7 +554,7 @@
               "visitId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               }
@@ -657,7 +657,7 @@
               "counterpartyId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -678,7 +678,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -712,7 +712,7 @@
               "processedById": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -850,7 +850,7 @@
               "departmentId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -864,7 +864,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1015,12 +1015,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
@@ -1029,8 +1025,8 @@
                   "nullable": false
                 },
                 "parentId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 }
               },
@@ -1109,22 +1105,18 @@
                   "nullable": false
                 },
                 "currentHolderId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "departmentId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "model": {
@@ -1277,22 +1269,18 @@
                   "nullable": false
                 },
                 "equipmentId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "intendedForId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "otherAccessoriesIncluded": {
@@ -1342,8 +1330,8 @@
                   }
                 },
                 "visitId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 }
               },
@@ -1456,8 +1444,8 @@
               ],
               "columns": {
                 "counterpartyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "counterpartyNote": {
@@ -1475,12 +1463,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "kind": {
@@ -1513,8 +1497,8 @@
                   "nullable": false
                 },
                 "processedById": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "signatureUrl": {
@@ -1660,8 +1644,8 @@
                   "nullable": false
                 },
                 "departmentId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "email": {
@@ -1670,12 +1654,8 @@
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "name": {
@@ -1818,7 +1798,69 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "878e75339db97b3f53b71329ee90480f98365ce37dfa69594147e1e3c76dbf8d"
+    "storageHash": "c8ba9eea2d2aa626570e54c62c4fa11e7d9c7bba8ff3433357e6dc0adc56f71c"
+  },
+  "execution": {
+    "executionHash": "261aa441cd16d7c8eb8c27f330d9ab1723f64525e715d1eb0e8137eeb0d43141",
+    "mutations": {
+      "defaults": [
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "department"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "equipment"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "equipmentEvent"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "equipmentVisit"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "staff"
+          }
+        }
+      ]
+    }
   },
   "capabilities": {
     "postgres": {

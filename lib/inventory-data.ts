@@ -133,7 +133,7 @@ export async function getVisitsPage(filters: VisitListFilters) {
   return { rows, total: total.count }
 }
 
-export async function getVisitDetail(id: number) {
+export async function getVisitDetail(id: string) {
   return db.orm.public.EquipmentVisit.where({ id })
     .include("processedBy", (s) => s.select("id", "name", "email"))
     .include("counterparty", (s) => s.select("id", "name", "email"))
@@ -166,7 +166,7 @@ export type EquipmentListFilters = {
   search?: string
   type?: EquipmentTypeValue
   status?: EquipmentStatusValue
-  departmentId?: number
+  departmentId?: string
 }
 
 export async function getEquipmentPage(filters: EquipmentListFilters) {
@@ -204,7 +204,7 @@ export async function getEquipmentPage(filters: EquipmentListFilters) {
   return { rows, total: total.count }
 }
 
-export async function getEquipmentDetail(id: number) {
+export async function getEquipmentDetail(id: string) {
   return db.orm.public.Equipment.where({ id })
     .include("department", (d) => d.select("id", "name"))
     .include("currentHolder", (h) => h.select("id", "name", "email"))
@@ -234,12 +234,26 @@ export async function getEquipmentDetail(id: number) {
     .first()
 }
 
+// One equipment line item's worth of label data — a specific event, not
+// the equipment as a whole, since ticket/quote/reason live per event.
+export async function getEventForLabel(id: string) {
+  return db.orm.public.EquipmentEvent.where({ id })
+    .select("id", "type", "ticketNumber", "quoteNumber", "returnReason")
+    .include("equipment", (e) =>
+      e
+        .select("id", "serialNumber", "type", "brand", "model")
+        .include("department", (d) => d.select("id", "name"))
+    )
+    .include("intendedFor", (s) => s.select("id", "name"))
+    .first()
+}
+
 export type StaffListFilters = {
   page: number
   perPage: number
   search?: string
   status?: StaffStatusValue
-  departmentId?: number
+  departmentId?: string
 }
 
 export async function getStaffPage(filters: StaffListFilters) {
@@ -271,7 +285,7 @@ export async function getStaffPage(filters: StaffListFilters) {
   return { rows, total: total.count }
 }
 
-export async function getStaffDetail(id: number) {
+export async function getStaffDetail(id: string) {
   return db.orm.public.Staff.where({ id })
     .include("department", (d) => d.select("id", "name"))
     .include("heldEquipment", (e) =>
@@ -290,7 +304,7 @@ export async function getDepartmentsWithCounts() {
     .all()
 }
 
-export async function getDepartmentDetail(id: number) {
+export async function getDepartmentDetail(id: string) {
   const [department, children, staff, equipment] = await Promise.all([
     db.orm.public.Department.where({ id })
       .include("parent", (p) => p.select("id", "name"))

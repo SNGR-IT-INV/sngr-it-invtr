@@ -17,7 +17,7 @@ import { EQUIPMENT_STATUSES, EQUIPMENT_TYPES } from "@/lib/equipment-types"
 export function EquipmentFilters({
   departments,
 }: {
-  departments: { id: number; name: string }[]
+  departments: { id: string; name: string }[]
 }) {
   const [search, setSearch] = useQueryState(
     "search",
@@ -114,7 +114,7 @@ export function EquipmentFilters({
         </SelectTrigger>
         <SelectContent>
           {departments.map((d) => (
-            <SelectItem key={d.id} value={String(d.id)}>
+            <SelectItem key={d.id} value={d.id}>
               {d.name}
             </SelectItem>
           ))}

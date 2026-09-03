@@ -13,7 +13,7 @@ type DepartmentNode = Awaited<
 function buildTree(
   departments: Awaited<ReturnType<typeof getDepartmentsWithCounts>>
 ) {
-  const nodes = new Map<number, DepartmentNode>(
+  const nodes = new Map<string, DepartmentNode>(
     departments.map((d) => [d.id, { ...d, children: [] }])
   )
   const roots: DepartmentNode[] = []

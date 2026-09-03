@@ -30,7 +30,7 @@ export default async function EquipmentDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const equipment = await getEquipmentDetail(Number(id))
+  const equipment = await getEquipmentDetail(id)
   if (!equipment) notFound()
 
   const imagePath = getProductImagePath(equipment.brand, equipment.model)
@@ -168,6 +168,14 @@ export default async function EquipmentDetailPage({
                     For: {event.intendedFor.name}
                   </p>
                 ) : null}
+                <Link
+                  href={`/label/event/${event.id}`}
+                  target="_blank"
+                  className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1 text-xs"
+                >
+                  <Icon icon="tabler:printer" className="size-3.5" />
+                  Print label
+                </Link>
               </div>
             ))}
           </CardContent>

@@ -46,11 +46,11 @@ import {
 export type ItemDraft = {
   clientId: string
   type: EquipmentTypeValue
-  matchedEquipmentId: number | null
+  matchedEquipmentId: string | null
   serialNumber: string
   brand: string
   model: string
-  departmentId: number | null
+  departmentId: string | null
   chargerIncluded: boolean
   otherAccessoriesIncluded: boolean
   accessoryNotes: string
@@ -95,7 +95,7 @@ export function IntakeForm({
 }: {
   itStaff: StaffOption[]
   allStaff: StaffOption[]
-  departments: { id: number; name: string }[]
+  departments: { id: string; name: string }[]
   equipment: EquipmentOption[]
 }) {
   const router = useRouter()
@@ -177,7 +177,7 @@ export function IntakeForm({
   // adjustment (guarded by this tracker) rather than an effect, per React's
   // guidance on syncing local state to a changed prop/value.
   const [lastHandledVisitId, setLastHandledVisitId] = React.useState<
-    number | null
+    string | null
   >(null)
   if (state.status === "success" && state.visitId !== lastHandledVisitId) {
     setLastHandledVisitId(state.visitId)
@@ -272,7 +272,7 @@ export function IntakeForm({
               </SelectTrigger>
               <SelectContent>
                 {itStaff.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
+                  <SelectItem key={s.id} value={s.id}>
                     {s.name}
                   </SelectItem>
                 ))}
@@ -393,7 +393,7 @@ function ItemCard({
 }: {
   item: ItemDraft
   equipment: EquipmentOption[]
-  departments: { id: number; name: string }[]
+  departments: { id: string; name: string }[]
   allStaff: StaffOption[]
   onChange: (patch: Partial<ItemDraft>) => void
   onRemove: () => void
@@ -478,10 +478,8 @@ function ItemCard({
             <div className="flex flex-col gap-1.5 sm:col-span-2">
               <Label>Department</Label>
               <Select
-                value={item.departmentId ? String(item.departmentId) : ""}
-                onValueChange={(v) =>
-                  onChange({ departmentId: v ? Number(v) : null })
-                }
+                value={item.departmentId ?? ""}
+                onValueChange={(v) => onChange({ departmentId: v || null })}
               >
                 <SelectTrigger
                   aria-label="Department"
@@ -491,7 +489,7 @@ function ItemCard({
                 </SelectTrigger>
                 <SelectContent>
                   {departments.map((d) => (
-                    <SelectItem key={d.id} value={String(d.id)}>
+                    <SelectItem key={d.id} value={d.id}>
                       {d.name}
                     </SelectItem>
                   ))}
