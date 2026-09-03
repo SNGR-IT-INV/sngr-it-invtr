@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "contract:emit": "prisma-cli contract emit",
+    "seed": "tsx src/prisma/seed.ts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -50,6 +51,7 @@
     "prettier-plugin-prisma": "^5.0.0",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   },
   "packageManager": "pnpm@11.8.0",
