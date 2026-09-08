@@ -25,16 +25,18 @@ Word-document-based log.
   `pnpm add` would pull v9, which is an unrelated, rewritten API. Don't
   bump this without checking.
 - **better-auth** for Microsoft/Entra SSO (not wired up yet — the kiosk and
-  dashboard are currently ungated; see `TODO`s in `app/kiosk/intake/page.tsx`
-  and `app/(dashboard)/layout.tsx`).
+  dashboard are currently ungated; see `TODO`s in
+  `app/kiosk/in-log/new/page.tsx` and `app/(dashboard)/layout.tsx`).
 
 ## Structure
 
 - `app/(dashboard)/` — the admin/back-office surface: sidebar + header
   shell, equipment overview, in-log/out-log visit history and detail pages.
-- `app/kiosk/intake/` — the shared front-desk iPad "in log" form (equipment
-  intake and returns). Deliberately full-screen, no dashboard chrome — see
-  `design-system/sngr-it-inventory/pages/kiosk.md` for why.
+- `app/kiosk/in-log/new/` — the shared front-desk iPad "in log" form
+  (equipment intake and returns). Deliberately full-screen, no dashboard
+  chrome — see `design-system/sngr-it-inventory/pages/kiosk.md` for why.
+- `app/kiosk/out-log/` — the kiosk-side out-log pickup completion screen
+  (find the prepped ticket, recipient signs).
 - `src/prisma/contract.prisma` — the data model. Read the comments in there
   first; several fields exist for non-obvious business reasons (equipment
   status lifecycle, the `EquipmentVisit`/`EquipmentEvent` header/line-item

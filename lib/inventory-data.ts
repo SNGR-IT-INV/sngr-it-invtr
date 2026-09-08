@@ -204,6 +204,37 @@ export async function getEquipmentPage(filters: EquipmentListFilters) {
   return { rows, total: total.count }
 }
 
+// Stock available to reserve for an out-log pickup — status = in_storage
+// only. Same near-zero-scale "fetch it all, filter client-side" approach as
+// getEquipmentDirectory (see that function's caller for the caveat about
+// needing a real search endpoint if this grows into the thousands).
+export async function getAvailableEquipment() {
+  return db.orm.public.Equipment.where({ status: "in_storage" })
+    .select("id", "serialNumber", "type", "brand", "model", "status")
+    .include("department", (d) => d.select("id", "name"))
+    .include("currentHolder", (h) => h.select("id", "name"))
+    .orderBy((e) => e.serialNumber.asc())
+    .limit(2000)
+    .all()
+}
+
+// Out-log visits still awaiting pickup — what the kiosk's "complete a
+// pickup" screen searches by ticket number.
+export async function getDraftOutLogVisits() {
+  return db.orm.public.EquipmentVisit.where({ kind: "out", status: "draft" })
+    .select("id", "ticketNumber", "notes", "occurredAt")
+    .include("counterparty", (s) => s.select("id", "name"))
+    .include("items", (i) =>
+      i
+        .select("id", "chargerIncluded", "otherAccessoriesIncluded")
+        .include("equipment", (e) =>
+          e.select("id", "serialNumber", "type", "brand", "model")
+        )
+    )
+    .orderBy((v) => v.occurredAt.desc())
+    .all()
+}
+
 export async function getEquipmentDetail(id: string) {
   return db.orm.public.Equipment.where({ id })
     .include("department", (d) => d.select("id", "name"))

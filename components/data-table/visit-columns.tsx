@@ -1,5 +1,7 @@
+import Link from "next/link"
 import type { ColumnDef } from "@tanstack/react-table"
 
+import { Icon } from "@/components/icon"
 import { Badge } from "@/components/ui/badge"
 import type { getVisitsPage } from "@/lib/inventory-data"
 
@@ -70,6 +72,20 @@ export function getVisitColumns({
             Completed
           </Badge>
         ),
+    })
+    columns.push({
+      id: "actions",
+      header: "",
+      cell: ({ row }) =>
+        row.original.status === "draft" ? (
+          <Link
+            href={`/kiosk/out-log?ticket=${encodeURIComponent(row.original.ticketNumber ?? "")}`}
+            className="text-primary inline-flex items-center gap-1 text-sm hover:underline"
+          >
+            <Icon icon="tabler:signature" className="size-4" />
+            Complete
+          </Link>
+        ) : null,
     })
   }
 

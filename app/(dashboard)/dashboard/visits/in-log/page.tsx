@@ -1,5 +1,8 @@
+import Link from "next/link"
 import type { SearchParams } from "nuqs/server"
 
+import { Icon } from "@/components/icon"
+import { Button } from "@/components/ui/button"
 import { PageContainer } from "@/components/layout/page-container"
 import { VisitFilters } from "@/components/data-table/visit-filters"
 import { VisitTable } from "@/components/data-table/visit-table"
@@ -26,11 +29,17 @@ export default async function InLogPage({
 
   return (
     <PageContainer>
-      <div>
-        <h1 className="text-xl font-semibold">In log</h1>
-        <p className="text-muted-foreground text-sm">
-          Equipment intake and returns logged at the front desk.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold">In log</h1>
+          <p className="text-muted-foreground text-sm">
+            Equipment intake and returns logged at the front desk.
+          </p>
+        </div>
+        <Button render={<Link href="/kiosk/in-log/new" />}>
+          <Icon icon="tabler:plus" />
+          Log an intake
+        </Button>
       </div>
       <VisitFilters />
       <VisitTable rows={rows} totalRows={total} />

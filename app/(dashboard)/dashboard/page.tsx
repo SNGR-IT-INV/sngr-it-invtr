@@ -61,7 +61,7 @@ export default async function OverviewPage() {
             of equipment tracked
           </p>
         </div>
-        <Button size="sm" render={<Link href="/kiosk/intake" />}>
+        <Button size="sm" render={<Link href="/kiosk/in-log/new" />}>
           Open in log <Icon icon="tabler:arrow-up-right" />
         </Button>
       </div>

@@ -19,20 +19,31 @@ export const navGroups: NavGroup[] = [
   {
     label: "Visits",
     items: [
-      { title: "In log", url: "/kiosk/intake", icon: "tabler:login" },
-      { title: "Out log", url: "/dashboard/visits/out-log", icon: "tabler:logout" },
       {
-        title: "Visit history",
-        url: "/dashboard/visits",
-        icon: "tabler:clipboard-list",
+        title: "In log",
+        url: "/dashboard/visits/in-log",
+        icon: "tabler:login",
+      },
+      {
+        title: "Out log",
+        url: "/dashboard/visits/out-log",
+        icon: "tabler:logout",
       },
     ],
   },
   {
     label: "Directory",
     items: [
-      { title: "Equipment", url: "/dashboard/equipment", icon: "tabler:device-laptop" },
-      { title: "Departments", url: "/dashboard/departments", icon: "tabler:building" },
+      {
+        title: "Equipment",
+        url: "/dashboard/equipment",
+        icon: "tabler:device-laptop",
+      },
+      {
+        title: "Departments",
+        url: "/dashboard/departments",
+        icon: "tabler:building",
+      },
       { title: "Staff", url: "/dashboard/staff", icon: "tabler:users" },
     ],
   },

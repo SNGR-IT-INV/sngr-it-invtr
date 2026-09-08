@@ -2,7 +2,7 @@
   "name": "IT Inventory Kiosk",
   "short_name": "IT Kiosk",
   "description": "Front-desk equipment intake terminal",
-  "start_url": "/kiosk/intake",
+  "start_url": "/kiosk/in-log/new",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4f39f6",

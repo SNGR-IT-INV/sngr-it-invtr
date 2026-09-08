@@ -29,7 +29,9 @@ export default async function VisitDetailPage({
   if (!visit) notFound()
 
   const backHref =
-    visit.kind === "out" ? "/dashboard/visits/out-log" : "/dashboard/visits"
+    visit.kind === "out"
+      ? "/dashboard/visits/out-log"
+      : "/dashboard/visits/in-log"
 
   return (
     <PageContainer>

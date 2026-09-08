@@ -192,7 +192,8 @@ export async function submitIntakeVisit(
       return visit.id
     })
 
-    revalidatePath("/kiosk/intake")
+    revalidatePath("/kiosk/in-log/new")
+    revalidatePath("/dashboard/visits/in-log")
     return { status: "success", visitId, itemCount: data.items.length }
   } catch (error) {
     const sqlState = (error as { sqlState?: string } | null)?.sqlState
