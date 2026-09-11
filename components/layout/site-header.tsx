@@ -27,7 +27,7 @@ export function SiteHeader() {
   const segments = pathname.split("/").filter(Boolean).slice(1) // drop "dashboard"
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+    <header className="glass-toolbar border-border/60 sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumb>

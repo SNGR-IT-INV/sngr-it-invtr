@@ -6,6 +6,14 @@
 > Generated via `ui-ux-pro-max`, then adapted by hand to fit what's already in this codebase
 > (Geist fonts, shadcn neutral base, `@base-ui/react` primitives) rather than accepted raw —
 > see notes inline for what changed and why.
+>
+> **As of 2026-09-10:** design decisions on this project use `ui-ux-pro-max` and the
+> `apple-design` skill together, not either alone — `ui-ux-pro-max` for palette,
+> typography scale, spacing, and component composition; `apple-design` for motion/feedback
+> timing, translucent materials, gesture/touch feel, and optical typography (tracking,
+> leading). shadcn stays mandatory per the rule below regardless of which skill informed a
+> given choice. See the **Motion & Materials** section for what's already been applied
+> app-wide from `apple-design`.
 
 ---
 
@@ -29,24 +37,24 @@
 
 Kept shadcn's existing neutral grayscale base (`app/globals.css`) — it's already WCAG-safe and fits a data-dense internal tool. Added one accent (indigo, close to the tool's own recommendation) plus semantic status colors, since equipment/staff status badges are a recurring UI need across both surfaces.
 
-| Role | Token | Light (oklch) | Use |
-|---|---|---|---|
-| Primary / accent | `--primary` | `oklch(0.511 0.262 276.966)` (indigo-600) | Primary buttons, links, active nav item, focus rings |
-| Success | `--success` | `oklch(0.696 0.17 162.48)` (emerald-500) | `in_storage`, `active` status |
-| Warning | `--warning` | `oklch(0.769 0.188 70.08)` (amber-500) | `awaiting_repair`, `on_leave` status |
-| Destructive | `--destructive` | *(unchanged — already existed)* | `retired`, `resigned`, delete actions |
-| Everything else | *(unchanged neutral scale)* | — | backgrounds, borders, muted text, cards |
+| Role             | Token                       | Light (oklch)                             | Use                                                  |
+| ---------------- | --------------------------- | ----------------------------------------- | ---------------------------------------------------- |
+| Primary / accent | `--primary`                 | `oklch(0.511 0.262 276.966)` (indigo-600) | Primary buttons, links, active nav item, focus rings |
+| Success          | `--success`                 | `oklch(0.696 0.17 162.48)` (emerald-500)  | `in_storage`, `active` status                        |
+| Warning          | `--warning`                 | `oklch(0.769 0.188 70.08)` (amber-500)    | `awaiting_repair`, `on_leave` status                 |
+| Destructive      | `--destructive`             | _(unchanged — already existed)_           | `retired`, `resigned`, delete actions                |
+| Everything else  | _(unchanged neutral scale)_ | —                                         | backgrounds, borders, muted text, cards              |
 
 Dark mode: lighten each by roughly one step (`oklch(0.585 0.233 277.117)` indigo-500 for primary, etc.) to keep contrast — see `app/globals.css` for the actual `.dark` block values once applied.
 
 **Status → color mapping** (use consistently anywhere equipment/staff status renders as a badge):
 
-| Status | Color |
-|---|---|
-| `in_storage` / `active` | success |
-| `handed_out` | primary (it's "in play", not a problem state) |
-| `awaiting_repair` / `on_leave` | warning |
-| `retired` / `resigned` | destructive (muted/outline variant, not solid — these are inactive, not alarming) |
+| Status                         | Color                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| `in_storage` / `active`        | success                                                                           |
+| `handed_out`                   | primary (it's "in play", not a problem state)                                     |
+| `awaiting_repair` / `on_leave` | warning                                                                           |
+| `retired` / `resigned`         | destructive (muted/outline variant, not solid — these are inactive, not alarming) |
 
 ## Density — two profiles, one token system
 
@@ -66,6 +74,35 @@ Full kiosk-specific sizing rules: `design-system/sngr-it-inventory/pages/kiosk.m
 When a new icon is needed: check it exists first (`curl "https://api.iconify.design/tabler.json?icons=<name>"`), then add its entry to `lib/icons.ts`'s `addCollection` call — don't just reference a new `tabler:*` name in JSX without registering it, it'll render as an empty span.
 
 **Note for future `shadcn add` runs**: this project's `components.json` still has `"iconLibrary": "lucide"`, and the shadcn CLI doesn't have first-class Iconify support — any newly-generated `components/ui/*.tsx` file will come back importing from `lucide-react`. Swap those imports to `@/components/icon` + register any new icon names by hand, the same way the existing primitives (`select`, `command`, `checkbox`, `dropdown-menu`, `breadcrumb`, `sidebar`, `dialog`, `sheet`) were converted.
+
+## Motion & Materials (`apple-design`)
+
+Applied app-wide 2026-09-10, following the `apple-design` skill (personal skill —
+`~/.claude/skills/apple-design/SKILL.md`, not checked into this repo). Scope was
+deliberately **visual + light motion only** — no spring-physics library, no gesture/drag
+rebuilds. Treat these as standing conventions for new UI, not a one-off pass:
+
+- **Translucent materials, theme-aware via `color-mix()`**: `.glass-toolbar` (tinted from
+  `--background`) for sticky chrome — currently the dashboard header (`sticky top-0`,
+  content scrolls under it). `.glass-panel` (tinted from `--popover`) for floating
+  overlays — applied to `Command`/`Popover`/`Select` in `components/ui/`, so every
+  combobox and filter dropdown gets it automatically. Both defined in `app/globals.css`
+  and fall back to solid/no-blur under `prefers-reduced-transparency: reduce`.
+  **Keep structural chrome (sidebar, dialogs/sheets) solid, not glass** — material weight
+  should encode hierarchy, and stacking two translucent layers kills legibility.
+- **Typography**: `font-optical-sizing: auto` plus `-0.011em` tracking on `h1`–`h3`
+  globally (`@layer base`, not per-page) — large/medium text reads too loose without it.
+  Small status text (`Badge`) gets `tracking-wide` instead — the opposite direction,
+  per the same optical-sizing logic.
+- **Feedback timing**: state-change transitions are ~150ms (100ms on active-press),
+  scoped to the specific properties that change rather than `transition-all`. `Button`
+  gets a subtle `active:scale-[0.98]` alongside its existing press-translate. Any
+  hand-rolled toggle/selection chip (see the kiosk forms' `has-[[data-checked]]` labels
+  for the pattern) should carry `transition-colors duration-150`, not an instant cut.
+- **Depth**: default-size `Card` carries `shadow-xs`; `size="sm"` cards stay flat —
+  bigger surfaces read as thicker, smaller ones carry less visual weight.
+- Reduced-motion support (`prefers-reduced-motion` zeroing transitions/animations) was
+  already in place before this pass and is unaffected.
 
 ## Anti-patterns (do not do)
 

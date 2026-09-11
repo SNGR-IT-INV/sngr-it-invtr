@@ -313,7 +313,7 @@ export function IntakeForm({
             {EQUIPMENT_TYPES.map((t) => (
               <label
                 key={t.value}
-                className="has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base"
+                className="has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base transition-colors duration-150"
               >
                 <Checkbox
                   className="size-5"
@@ -553,7 +553,7 @@ function ItemCard({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base">
+        <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base transition-colors duration-150">
           <Checkbox
             className="size-5"
             checked={item.chargerIncluded}
@@ -561,7 +561,7 @@ function ItemCard({
           />
           Charger taken too
         </label>
-        <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base">
+        <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-base transition-colors duration-150">
           <Checkbox
             className="size-5"
             checked={item.otherAccessoriesIncluded}

@@ -194,7 +194,7 @@ export function PrepareOutLogForm({
                 </Button>
               </div>
               <div className="flex flex-wrap gap-3">
-                <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm">
+                <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors duration-150">
                   <Checkbox
                     checked={item.chargerIncluded}
                     onCheckedChange={(c) =>
@@ -203,7 +203,7 @@ export function PrepareOutLogForm({
                   />
                   Charger included
                 </label>
-                <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm">
+                <label className="has-[[data-checked]]:border-warning has-[[data-checked]]:bg-warning/10 flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors duration-150">
                   <Checkbox
                     checked={item.otherAccessoriesIncluded}
                     onCheckedChange={(c) =>

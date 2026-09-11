@@ -78,9 +78,9 @@ export function SignaturePad({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {label ? (
-        <div className="text-sm text-muted-foreground">{label}</div>
+        <div className="text-muted-foreground text-sm">{label}</div>
       ) : null}
-      <div className="rounded-lg border border-input bg-white">
+      <div className="border-input rounded-xl border bg-white shadow-inner">
         <canvas
           ref={canvasRef}
           width={600}
@@ -97,10 +97,15 @@ export function SignaturePad({
         />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Sign above with your finger or a stylus.
         </span>
-        <Button type="button" variant="outline" className="h-11" onClick={clear}>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11"
+          onClick={clear}
+        >
           Clear
         </Button>
       </div>

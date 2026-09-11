@@ -138,6 +138,46 @@
   }
   html {
     @apply font-sans;
+    font-optical-sizing: auto;
+  }
+  /* Large text reads as too loosely spaced at this weight/size — tighten
+     it, per the same optical-sizing logic system fonts apply automatically.
+     Body copy stays near zero; nothing here is large enough to need it. */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.011em;
+  }
+}
+
+/* Two translucent-material presets — panel (floating popovers/menus, tinted
+   from --popover) and toolbar (sticky chrome over scrolling content, tinted
+   from --background). Both read their tint from a live CSS variable so
+   light/dark and any future theme just work with no separate dark block. */
+.glass-panel {
+  background: color-mix(in oklch, var(--popover) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+.glass-toolbar {
+  background: color-mix(in oklch, var(--background) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Frostier/solid, never see-through content behind, when the user has
+   asked for it — same rule as reduced motion below. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel {
+    background: var(--popover);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass-toolbar {
+    background: var(--background);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 

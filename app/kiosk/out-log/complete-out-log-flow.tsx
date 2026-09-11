@@ -113,7 +113,7 @@ export function CompleteOutLogFlow({
                 key={v.id}
                 type="button"
                 onClick={() => setSelected(v)}
-                className="hover:border-primary hover:bg-primary/5 flex min-h-11 flex-col gap-1 rounded-lg border p-3 text-left text-base"
+                className="hover:border-primary hover:bg-primary/5 flex min-h-11 flex-col gap-1 rounded-lg border p-3 text-left text-base transition-colors duration-150"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-medium">
