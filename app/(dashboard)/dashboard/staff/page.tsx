@@ -1,5 +1,8 @@
+import Link from "next/link"
 import type { SearchParams } from "nuqs/server"
 
+import { Icon } from "@/components/icon"
+import { Button } from "@/components/ui/button"
 import { PageContainer } from "@/components/layout/page-container"
 import { StaffFilters } from "@/components/data-table/staff-filters"
 import { StaffTable } from "@/components/data-table/staff-table"
@@ -27,11 +30,17 @@ export default async function StaffPage({
 
   return (
     <PageContainer>
-      <div>
-        <h1 className="text-xl font-semibold">Staff</h1>
-        <p className="text-muted-foreground text-sm">
-          Directory of org staff — who holds what equipment, by department.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold">Staff</h1>
+          <p className="text-muted-foreground text-sm">
+            Directory of org staff — who holds what equipment, by department.
+          </p>
+        </div>
+        <Button render={<Link href="/dashboard/staff/new" />}>
+          <Icon icon="tabler:plus" />
+          Add staff member
+        </Button>
       </div>
       <StaffFilters departments={departments} />
       <StaffTable rows={rows} totalRows={total} />
